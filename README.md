@@ -1,4 +1,3 @@
 # TimeTracker
 
-Simple time tracker for local deployment.
-
+Simple time tracking application for local deployment. 
