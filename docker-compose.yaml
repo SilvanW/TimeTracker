@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_PASSWORD
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nodered:
+    image: nodered/node-red:latest
+    dns: "8.8.8.8"
+    ports:
+      - "1880:1880"
+    environment:
+      - TZ=Europe/Zurich
+    depends_on:
+      - postgres
+    volumes:
+      - nodered_data:/data
+
+volumes:
+  postgres_data:
+  nodered_data:
