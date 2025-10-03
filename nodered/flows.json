@@ -383,7 +383,7 @@
         "z": "ab09c729ddbc5d2b",
         "name": "",
         "group": "60e61f80a5ae1033",
-        "order": 3,
+        "order": 4,
         "width": 6,
         "height": 1,
         "passthru": false,
@@ -410,7 +410,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "Insert Project",
-        "func": "const start = flow.get(\"start\")\nconst end = flow.get(\"end\")\n\nmsg.query = `insert into tbltime (\"project_id\", \"start\", \"end\")\nvalues (1, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000))`\n\nnode.warn(msg.query)\n\nreturn msg;",
+        "func": "const start = flow.get(\"start\")\nconst end = flow.get(\"end\")\nconst project_id = flow.get(\"project_id\")\n\nmsg.query = `insert into tbltime (\"project_id\", \"start\", \"end\")\nvalues (${project_id}, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000))`\n\nnode.warn(msg.query)\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -520,7 +520,7 @@
         "label": "Start",
         "tooltip": "Work start time",
         "group": "60e61f80a5ae1033",
-        "order": 1,
+        "order": 2,
         "width": 6,
         "height": 1,
         "passthru": true,
@@ -628,7 +628,7 @@
         "label": "End",
         "tooltip": "Work end time",
         "group": "60e61f80a5ae1033",
-        "order": 2,
+        "order": 3,
         "width": 6,
         "height": 1,
         "passthru": true,
@@ -809,6 +809,152 @@
         "x": 820,
         "y": 80,
         "wires": []
+    },
+    {
+        "id": "f37792554d479b73",
+        "type": "ui_dropdown",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "label": "Project",
+        "tooltip": "Project to write time to",
+        "place": "Select option",
+        "group": "60e61f80a5ae1033",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 580,
+        "y": 880,
+        "wires": [
+            [
+                "b4f812e42e31769e"
+            ]
+        ]
+    },
+    {
+        "id": "8e60fccf1c087e56",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "query",
+                "pt": "msg",
+                "to": "select * from tblprojects",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 1000,
+        "wires": [
+            [
+                "43b3804b4aae6d8c"
+            ]
+        ]
+    },
+    {
+        "id": "43b3804b4aae6d8c",
+        "type": "postgresql",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "query": "",
+        "postgreSQLConfig": "58df7d171bfac989",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 610,
+        "y": 1000,
+        "wires": [
+            [
+                "d5631e9e7762fb5c"
+            ]
+        ]
+    },
+    {
+        "id": "91708ab71f2576a3",
+        "type": "inject",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 1000,
+        "wires": [
+            [
+                "8e60fccf1c087e56"
+            ]
+        ]
+    },
+    {
+        "id": "d5631e9e7762fb5c",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "dropdown adapter",
+        "func": "const inp = msg.payload;\n\nvar options = []\n\nfor (let option of inp) {\n    options.push({[option[\"name\"]]: parseInt(option[\"id\"])})\n}\n\nmsg.options = options\n\nmsg.payload = Object.values(options[0])[0]\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 880,
+        "wires": [
+            [
+                "f37792554d479b73"
+            ]
+        ]
+    },
+    {
+        "id": "b4f812e42e31769e",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "project_id",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 820,
+        "y": 880,
+        "wires": [
+            []
+        ]
     },
     {
         "id": "73d1c830104b579f",
@@ -1208,7 +1354,7 @@
         "wires": []
     },
     {
-        "id": "172014a8b26ee1cf",
+        "id": "3621f40e82706758",
         "type": "global-config",
         "env": [],
         "modules": {
