@@ -1,0 +1,1047 @@
+[
+    {
+        "id": "ab09c729ddbc5d2b",
+        "type": "tab",
+        "label": "Tracking",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Settings",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "58df7d171bfac989",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "postgres",
+        "hostFieldType": "str",
+        "port": 5432,
+        "portFieldType": "num",
+        "database": "postgres",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": 10,
+        "maxFieldType": "num",
+        "idle": 1000,
+        "idleFieldType": "num",
+        "connectionTimeout": 10000,
+        "connectionTimeoutFieldType": "num",
+        "user": "postgres",
+        "userFieldType": "str",
+        "password": "your_password",
+        "passwordFieldType": "str"
+    },
+    {
+        "id": "414dfc96a94d71e0",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD.MM.YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "523d5ae69d4d2967",
+        "type": "ui_tab",
+        "name": "Settings",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "2e42b3502662b12d",
+        "type": "ui_group",
+        "name": "Projects",
+        "tab": "523d5ae69d4d2967",
+        "order": 1,
+        "disp": true,
+        "width": 8,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "900443b7c5e5bf2a",
+        "type": "ui_group",
+        "name": "New Project",
+        "tab": "523d5ae69d4d2967",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6311d57cd4e85433",
+        "type": "ui_tab",
+        "name": "Tracking",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "6eddfd448fd41851",
+        "type": "ui_group",
+        "name": "Overview",
+        "tab": "6311d57cd4e85433",
+        "order": 1,
+        "disp": true,
+        "width": 8,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "60e61f80a5ae1033",
+        "type": "ui_group",
+        "name": "New Tracking",
+        "tab": "6311d57cd4e85433",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "d61146a7a8c0c366",
+        "type": "ui_button",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "group": "6eddfd448fd41851",
+        "order": 2,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Refresh",
+        "tooltip": "Refresh the Time Tracked in the Database",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-refresh",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 140,
+        "y": 120,
+        "wires": [
+            [
+                "c8ee897f35376f87"
+            ]
+        ]
+    },
+    {
+        "id": "c8ee897f35376f87",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "query",
+                "pt": "msg",
+                "to": "SELECT * FROM tbltime",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 360,
+        "y": 120,
+        "wires": [
+            [
+                "ae8a9246450d3bc7"
+            ]
+        ]
+    },
+    {
+        "id": "ae8a9246450d3bc7",
+        "type": "postgresql",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "query": "",
+        "postgreSQLConfig": "58df7d171bfac989",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 610,
+        "y": 120,
+        "wires": [
+            [
+                "ada512396658a6de"
+            ]
+        ]
+    },
+    {
+        "id": "ada512396658a6de",
+        "type": "ui_table",
+        "z": "ab09c729ddbc5d2b",
+        "group": "6eddfd448fd41851",
+        "name": "",
+        "order": 1,
+        "width": 8,
+        "height": 4,
+        "columns": [],
+        "outputs": 0,
+        "cts": false,
+        "x": 820,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "4b39fed3384ce09b",
+        "type": "ui_button",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "group": "6eddfd448fd41851",
+        "order": 3,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Add",
+        "tooltip": "Add a new Project to the Database",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-plus",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 130,
+        "y": 300,
+        "wires": [
+            [
+                "3f7defbbf5dec990"
+            ]
+        ]
+    },
+    {
+        "id": "97a76c8a6628f221",
+        "type": "ui_button",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "group": "60e61f80a5ae1033",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "label": "Save",
+        "tooltip": "Save the new project",
+        "color": "",
+        "bgcolor": "green",
+        "className": "",
+        "icon": "fa-save",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 130,
+        "y": 520,
+        "wires": [
+            [
+                "cc8b35f14e252016"
+            ]
+        ]
+    },
+    {
+        "id": "cc8b35f14e252016",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "Insert Project",
+        "func": "const start = flow.get(\"start\")\nconst end = flow.get(\"end\")\n\nmsg.query = `insert into tbltime (\"project_id\", \"start\", \"end\")\nvalues (1, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000))`\n\nnode.warn(msg.query)\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 520,
+        "wires": [
+            [
+                "cf732d968b88a1d6"
+            ]
+        ]
+    },
+    {
+        "id": "cf732d968b88a1d6",
+        "type": "postgresql",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "query": "",
+        "postgreSQLConfig": "58df7d171bfac989",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 550,
+        "y": 520,
+        "wires": [
+            [
+                "c07026a022d81e26",
+                "41a465110d7b08b5",
+                "c8ee897f35376f87"
+            ]
+        ]
+    },
+    {
+        "id": "5a61ce3c4c57f4e8",
+        "type": "ui_ui_control",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "events": "all",
+        "x": 540,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3f7defbbf5dec990",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"show\":[\"Tracking_New_Tracking\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 330,
+        "y": 300,
+        "wires": [
+            [
+                "5a61ce3c4c57f4e8"
+            ]
+        ]
+    },
+    {
+        "id": "c07026a022d81e26",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"hide\":[\"Tracking_New_Tracking\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 790,
+        "y": 520,
+        "wires": [
+            [
+                "5a61ce3c4c57f4e8"
+            ]
+        ]
+    },
+    {
+        "id": "78ab10ace9cbd062",
+        "type": "ui_text_input",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "label": "Start",
+        "tooltip": "Work start time",
+        "group": "60e61f80a5ae1033",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "datetime-local",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 430,
+        "y": 620,
+        "wires": [
+            [
+                "21400360411044e4"
+            ]
+        ]
+    },
+    {
+        "id": "21400360411044e4",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "start",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "25bfb7699557d53e",
+        "type": "inject",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 540,
+        "y": 460,
+        "wires": [
+            [
+                "c07026a022d81e26"
+            ]
+        ]
+    },
+    {
+        "id": "41a465110d7b08b5",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 230,
+        "y": 620,
+        "wires": [
+            [
+                "78ab10ace9cbd062",
+                "0e63c30350e9e6e7"
+            ]
+        ]
+    },
+    {
+        "id": "0e63c30350e9e6e7",
+        "type": "ui_text_input",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "label": "End",
+        "tooltip": "Work end time",
+        "group": "60e61f80a5ae1033",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "datetime-local",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 430,
+        "y": 680,
+        "wires": [
+            [
+                "7310b3277a12d986"
+            ]
+        ]
+    },
+    {
+        "id": "7310b3277a12d986",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "end",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 680,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1c967d29b8429977",
+        "type": "inject",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 190,
+        "y": 460,
+        "wires": [
+            [
+                "cc8b35f14e252016"
+            ]
+        ]
+    },
+    {
+        "id": "73d1c830104b579f",
+        "type": "postgresql",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "query": "",
+        "postgreSQLConfig": "58df7d171bfac989",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 670,
+        "y": 100,
+        "wires": [
+            [
+                "c00c50456a1915d8"
+            ]
+        ]
+    },
+    {
+        "id": "dee22348bf8df201",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 210,
+        "y": 100,
+        "wires": [
+            [
+                "f1bb93a1b04a4a0e"
+            ]
+        ]
+    },
+    {
+        "id": "c00c50456a1915d8",
+        "type": "ui_table",
+        "z": "f6f2187d.f17ca8",
+        "group": "2e42b3502662b12d",
+        "name": "",
+        "order": 1,
+        "width": 8,
+        "height": 4,
+        "columns": [],
+        "outputs": 1,
+        "cts": true,
+        "x": 880,
+        "y": 100,
+        "wires": [
+            [
+                "078d5327d9b75a22"
+            ]
+        ]
+    },
+    {
+        "id": "0eb4d6c86e075d0a",
+        "type": "ui_button",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "group": "2e42b3502662b12d",
+        "order": 2,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Refresh",
+        "tooltip": "Refresh the Projects in the Database",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-refresh",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 200,
+        "y": 140,
+        "wires": [
+            [
+                "f1bb93a1b04a4a0e"
+            ]
+        ]
+    },
+    {
+        "id": "f1bb93a1b04a4a0e",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "query",
+                "pt": "msg",
+                "to": "SELECT * FROM tblprojects",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 420,
+        "y": 100,
+        "wires": [
+            [
+                "73d1c830104b579f"
+            ]
+        ]
+    },
+    {
+        "id": "72d420bd07620643",
+        "type": "ui_button",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "group": "2e42b3502662b12d",
+        "order": 3,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Add",
+        "tooltip": "Add a new Project to the Database",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-plus",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 190,
+        "y": 340,
+        "wires": [
+            [
+                "e191b530b175f942"
+            ]
+        ]
+    },
+    {
+        "id": "6c45d91365f6410b",
+        "type": "ui_button",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "group": "900443b7c5e5bf2a",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Save",
+        "tooltip": "Save the new project",
+        "color": "",
+        "bgcolor": "green",
+        "className": "",
+        "icon": "fa-save",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 190,
+        "y": 560,
+        "wires": [
+            [
+                "05dac56d14a61209"
+            ]
+        ]
+    },
+    {
+        "id": "05dac56d14a61209",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Insert Project",
+        "func": "const project_name = flow.get(\"project_name\")\nmsg.query = `insert into tblprojects (name)\nvalues ('${project_name}')`\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 560,
+        "wires": [
+            [
+                "179a05eab46e674b"
+            ]
+        ]
+    },
+    {
+        "id": "179a05eab46e674b",
+        "type": "postgresql",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "query": "",
+        "postgreSQLConfig": "58df7d171bfac989",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 610,
+        "y": 560,
+        "wires": [
+            [
+                "f1bb93a1b04a4a0e",
+                "91b8dbe38a8fc455",
+                "a6bb1bdb43326150"
+            ]
+        ]
+    },
+    {
+        "id": "b62d768206a848b3",
+        "type": "ui_ui_control",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "events": "all",
+        "x": 600,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e191b530b175f942",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"show\":[\"Settings_New_Project\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "b62d768206a848b3"
+            ]
+        ]
+    },
+    {
+        "id": "91b8dbe38a8fc455",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"hide\":[\"Settings_New_Project\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 850,
+        "y": 560,
+        "wires": [
+            [
+                "b62d768206a848b3"
+            ]
+        ]
+    },
+    {
+        "id": "8b1bed10ebd785d3",
+        "type": "ui_text_input",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "label": "Project Name",
+        "tooltip": "The name of the project",
+        "group": "900443b7c5e5bf2a",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 520,
+        "y": 660,
+        "wires": [
+            [
+                "e4caab3bea0c5ccb"
+            ]
+        ]
+    },
+    {
+        "id": "e4caab3bea0c5ccb",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "project_name",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 770,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "93a78d19f6c19f29",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 600,
+        "y": 500,
+        "wires": [
+            [
+                "91b8dbe38a8fc455"
+            ]
+        ]
+    },
+    {
+        "id": "a6bb1bdb43326150",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 290,
+        "y": 660,
+        "wires": [
+            [
+                "8b1bed10ebd785d3"
+            ]
+        ]
+    },
+    {
+        "id": "078d5327d9b75a22",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "1d7079c322a737f5",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-postgresql": "0.15.4",
+            "node-red-dashboard": "3.6.6",
+            "node-red-node-ui-table": "0.4.5"
+        }
+    }
+]
