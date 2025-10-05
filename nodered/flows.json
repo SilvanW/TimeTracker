@@ -278,7 +278,7 @@
         "y": 160,
         "wires": [
             [
-                "ada512396658a6de"
+                "0b41b15fa9c996ac"
             ]
         ]
     },
@@ -325,7 +325,7 @@
             {
                 "field": "start",
                 "title": "Start",
-                "width": "",
+                "width": "25%",
                 "align": "left",
                 "formatter": "plaintext",
                 "formatterParams": {
@@ -335,7 +335,7 @@
             {
                 "field": "end",
                 "title": "End",
-                "width": "",
+                "width": "25%",
                 "align": "left",
                 "formatter": "plaintext",
                 "formatterParams": {
@@ -345,7 +345,7 @@
         ],
         "outputs": 0,
         "cts": false,
-        "x": 820,
+        "x": 1030,
         "y": 160,
         "wires": []
     },
@@ -410,7 +410,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "Insert Project",
-        "func": "const start = flow.get(\"start\")\nconst end = flow.get(\"end\")\nconst project_id = flow.get(\"project_id\")\n\nmsg.query = `insert into tbltime (\"project_id\", \"start\", \"end\")\nvalues (${project_id}, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000))`\n\nnode.warn(msg.query)\n\nreturn msg;",
+        "func": "const start = flow.get(\"start\")\nconst end = flow.get(\"end\")\nconst project_id = flow.get(\"project_id\")\n\nmsg.query = `insert into tbltime (\"project_id\", \"start\", \"end\")\nvalues (${project_id}, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000))`\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -560,7 +560,9 @@
         "x": 680,
         "y": 660,
         "wires": [
-            []
+            [
+                "0e63c30350e9e6e7"
+            ]
         ]
     },
     {
@@ -738,7 +740,7 @@
                 "t": "set",
                 "p": "query",
                 "pt": "msg",
-                "to": "select calendar_week, sum(working_time) from ( select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\" from tbltime left join tblprojects on tblprojects.id = tbltime.project_id ) group by calendar_week",
+                "to": "select calendar_week, sum(working_time) from ( select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\" from tbltime left join tblprojects on tblprojects.id = tbltime.project_id ) group by calendar_week order by calendar_week DESC",
                 "tot": "str"
             }
         ],
@@ -769,7 +771,7 @@
         "y": 80,
         "wires": [
             [
-                "f11e92424e01bdf2"
+                "3793a5d927c15ee5"
             ]
         ]
     },
@@ -806,7 +808,7 @@
         ],
         "outputs": 0,
         "cts": false,
-        "x": 820,
+        "x": 1030,
         "y": 80,
         "wires": []
     },
@@ -954,6 +956,76 @@
         "y": 880,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "7ab153e939140284",
+        "type": "inject",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 40,
+        "wires": [
+            [
+                "3ad49b513910e125",
+                "c8ee897f35376f87"
+            ]
+        ]
+    },
+    {
+        "id": "0b41b15fa9c996ac",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "parseData",
+        "func": "const inp = msg.payload;\n\nfor (let i in inp) {\n    // Time\n    inp[i][\"start\"] = inp[i][\"start\"].toLocaleString(\"de-CH\")\n    inp[i][\"end\"] = inp[i][\"end\"].toLocaleString(\"de-CH\")\n\n    // Working Time\n    inp[i][\"working_time\"] = parseFloat(inp[i][\"working_time\"])\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 160,
+        "wires": [
+            [
+                "ada512396658a6de"
+            ]
+        ]
+    },
+    {
+        "id": "3793a5d927c15ee5",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "parseData",
+        "func": "const inp = msg.payload;\n\nfor (let i in inp) {\n    // Working Time\n    inp[i][\"sum\"] = parseFloat(inp[i][\"sum\"])\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 80,
+        "wires": [
+            [
+                "f11e92424e01bdf2"
+            ]
         ]
     },
     {
@@ -1354,7 +1426,7 @@
         "wires": []
     },
     {
-        "id": "3621f40e82706758",
+        "id": "b294f883d0193710",
         "type": "global-config",
         "env": [],
         "modules": {
