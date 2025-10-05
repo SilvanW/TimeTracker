@@ -215,7 +215,7 @@
         "z": "ab09c729ddbc5d2b",
         "name": "",
         "group": "6eddfd448fd41851",
-        "order": 2,
+        "order": 3,
         "width": 6,
         "height": 1,
         "passthru": false,
@@ -233,34 +233,7 @@
         "y": 160,
         "wires": [
             [
-                "c8ee897f35376f87"
-            ]
-        ]
-    },
-    {
-        "id": "c8ee897f35376f87",
-        "type": "change",
-        "z": "ab09c729ddbc5d2b",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "query",
-                "pt": "msg",
-                "to": "select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\" from tbltime left join tblprojects on tblprojects.id = tbltime.project_id",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 360,
-        "y": 160,
-        "wires": [
-            [
-                "ae8a9246450d3bc7"
+                "47e920b05b0452a3"
             ]
         ]
     },
@@ -287,8 +260,8 @@
         "type": "ui_table",
         "z": "ab09c729ddbc5d2b",
         "group": "6eddfd448fd41851",
-        "name": "",
-        "order": 1,
+        "name": "Detail",
+        "order": 2,
         "width": 12,
         "height": 6,
         "columns": [
@@ -355,7 +328,7 @@
         "z": "ab09c729ddbc5d2b",
         "name": "",
         "group": "6eddfd448fd41851",
-        "order": 3,
+        "order": 4,
         "width": 6,
         "height": 1,
         "passthru": false,
@@ -441,8 +414,8 @@
             [
                 "c07026a022d81e26",
                 "41a465110d7b08b5",
-                "c8ee897f35376f87",
-                "3ad49b513910e125"
+                "3ad49b513910e125",
+                "47e920b05b0452a3"
             ]
         ]
     },
@@ -780,7 +753,7 @@
         "type": "ui_table",
         "z": "ab09c729ddbc5d2b",
         "group": "e27c2ac7935009d8",
-        "name": "",
+        "name": "Overview",
         "order": 1,
         "width": 6,
         "height": 6,
@@ -808,7 +781,7 @@
         ],
         "outputs": 0,
         "cts": false,
-        "x": 1030,
+        "x": 1040,
         "y": 80,
         "wires": []
     },
@@ -984,7 +957,7 @@
         "wires": [
             [
                 "3ad49b513910e125",
-                "c8ee897f35376f87"
+                "47e920b05b0452a3"
             ]
         ]
     },
@@ -1025,6 +998,77 @@
         "wires": [
             [
                 "f11e92424e01bdf2"
+            ]
+        ]
+    },
+    {
+        "id": "f4fde1f6bcea4fd3",
+        "type": "ui_text_input",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "label": "Calendar Week",
+        "tooltip": "Filter for the currently displayed calendar week",
+        "group": "6eddfd448fd41851",
+        "order": 1,
+        "width": 12,
+        "height": 1,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 380,
+        "y": 1160,
+        "wires": [
+            [
+                "36d62a7d56118351"
+            ]
+        ]
+    },
+    {
+        "id": "36d62a7d56118351",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "filter.calendar_week",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 670,
+        "y": 1160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "47e920b05b0452a3",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "detailRequest",
+        "func": "const filter = flow.get(\"filter\")\n\n// Query without filter\nmsg.query = `\nselect tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\nfrom tbltime\nleft join tblprojects on tblprojects.id = tbltime.project_id`\n\nif (filter === undefined) {\n    return msg;\n}\n\nif (filter[\"calendar_week\"] === null) {\n    return msg;\n}\n\nmsg.query = `\nselect tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\nfrom tbltime\nleft join tblprojects on tblprojects.id = tbltime.project_id\nwhere extract (week from start) = ${filter[\"calendar_week\"]}`\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 160,
+        "wires": [
+            [
+                "ae8a9246450d3bc7"
             ]
         ]
     },
@@ -1426,7 +1470,7 @@
         "wires": []
     },
     {
-        "id": "b294f883d0193710",
+        "id": "b9f0469e1e410916",
         "type": "global-config",
         "env": [],
         "modules": {
