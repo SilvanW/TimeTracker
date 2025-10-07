@@ -1,5 +1,6 @@
 # Files
 .env
+*.db
 
 # Folders
 .db_backup/
