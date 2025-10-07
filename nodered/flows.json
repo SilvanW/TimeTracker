@@ -414,8 +414,8 @@
             [
                 "c07026a022d81e26",
                 "41a465110d7b08b5",
-                "3ad49b513910e125",
-                "47e920b05b0452a3"
+                "47e920b05b0452a3",
+                "c8936184f999a438"
             ]
         ]
     },
@@ -699,34 +699,7 @@
         "y": 80,
         "wires": [
             [
-                "3ad49b513910e125"
-            ]
-        ]
-    },
-    {
-        "id": "3ad49b513910e125",
-        "type": "change",
-        "z": "ab09c729ddbc5d2b",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "query",
-                "pt": "msg",
-                "to": "select calendar_week, sum(working_time) from ( select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\" from tbltime left join tblprojects on tblprojects.id = tbltime.project_id ) group by calendar_week order by calendar_week DESC",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 360,
-        "y": 80,
-        "wires": [
-            [
-                "d31b2b09a48d9236"
+                "c8936184f999a438"
             ]
         ]
     },
@@ -757,28 +730,7 @@
         "order": 1,
         "width": 6,
         "height": 6,
-        "columns": [
-            {
-                "field": "calendar_week",
-                "title": "KW",
-                "width": "",
-                "align": "left",
-                "formatter": "plaintext",
-                "formatterParams": {
-                    "target": "_blank"
-                }
-            },
-            {
-                "field": "sum",
-                "title": "Time",
-                "width": "",
-                "align": "left",
-                "formatter": "plaintext",
-                "formatterParams": {
-                    "target": "_blank"
-                }
-            }
-        ],
+        "columns": [],
         "outputs": 0,
         "cts": false,
         "x": 1040,
@@ -956,8 +908,8 @@
         "y": 40,
         "wires": [
             [
-                "3ad49b513910e125",
-                "47e920b05b0452a3"
+                "47e920b05b0452a3",
+                "c8936184f999a438"
             ]
         ]
     },
@@ -1049,7 +1001,9 @@
         "x": 670,
         "y": 1160,
         "wires": [
-            []
+            [
+                "47e920b05b0452a3"
+            ]
         ]
     },
     {
@@ -1069,6 +1023,26 @@
         "wires": [
             [
                 "ae8a9246450d3bc7"
+            ]
+        ]
+    },
+    {
+        "id": "c8936184f999a438",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "overviewRequest",
+        "func": "msg.query = `\nselect calendar_week, sum(working_time)\nfrom (\n    select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\n    from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n)\ngroup by calendar_week order by calendar_week DESC\n`\n\nif (true) {\n    msg.query = `\n    select \"day_of_year\", sum(\"working_time\")\n    from (\n        select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (DOY from start) as \"day_of_year\"\n        from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n    )\n    group by \"day_of_year\" order by \"day_of_year\" DESC\n    `\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 80,
+        "wires": [
+            [
+                "d31b2b09a48d9236"
             ]
         ]
     },
@@ -1470,7 +1444,7 @@
         "wires": []
     },
     {
-        "id": "b9f0469e1e410916",
+        "id": "57fa2ce418233fe2",
         "type": "global-config",
         "env": [],
         "modules": {
