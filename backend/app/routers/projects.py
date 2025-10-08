@@ -20,3 +20,15 @@ def create_project(project: CreateProject, session: SessionDep):
     session.commit()
     session.refresh(db_project)
     return db_project
+
+
+@router.delete("/{project_id}")
+def delete_project(project_id: int, session: SessionDep):
+    project = session.get(Project, project_id)
+
+    if not project:
+        return {"error": "Project not found"}
+
+    session.delete(project)
+    session.commit()
+    return {"message": "Project deleted successfully"}
