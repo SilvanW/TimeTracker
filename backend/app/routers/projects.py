@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 from sqlmodel import select
 
-from app.database.db import SessionDep, Project, CreateProject
+from app.database.db import SessionDep
+from app.database.project import CreateProject, Project
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 

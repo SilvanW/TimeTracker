@@ -1,23 +1,16 @@
-from typing import Annotated, Optional
+import os
+from typing import Annotated
+
+from dotenv import load_dotenv
 from fastapi import Depends
-from pydantic import BaseModel
-from sqlmodel import Field, SQLModel, Session, create_engine
+from sqlmodel import Session, SQLModel, create_engine
+
+load_dotenv()
 
 
-class CreateProject(BaseModel):
-    name: str
+postgres_url = os.getenv("POSTGRES_URL")
 
-
-class Project(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-
-
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
+engine = create_engine(postgres_url)
 
 
 def create_db_and_tables():
