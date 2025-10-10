@@ -8,13 +8,13 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @router.get("/")
-def read_projects(session: SessionDep):
+def read_projects(session: SessionDep) -> list:
     projects = session.exec(select(Project)).all()
     return projects
 
 
 @router.post("/")
-def create_project(project: CreateProject, session: SessionDep):
+def create_project(project: CreateProject, session: SessionDep) -> Project:
     db_project = Project(**project.model_dump())
     session.add(db_project)
     session.commit()
