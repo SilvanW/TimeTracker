@@ -20,6 +20,20 @@ services:
     volumes:
       - nodered_data:/data
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    environment:
+      - PORT=80
+      - POSTGRES_URL
+    depends_on:
+      - postgres
+    env_file: ".env"
+
 volumes:
   postgres_data:
+  test_postgres_data:
   nodered_data:
