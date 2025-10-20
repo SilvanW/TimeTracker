@@ -15,6 +15,33 @@
         "info": ""
     },
     {
+        "id": "fd9163014ca32398",
+        "type": "junction",
+        "z": "f6f2187d.f17ca8",
+        "x": 380,
+        "y": 100,
+        "wires": [
+            [
+                "5d6f05ef90c17f6d"
+            ]
+        ]
+    },
+    {
+        "id": "135ff4718eb96aef",
+        "type": "junction",
+        "z": "f6f2187d.f17ca8",
+        "x": 860,
+        "y": 560,
+        "wires": [
+            [
+                "a6bb1bdb43326150",
+                "91b8dbe38a8fc455",
+                "fd9163014ca32398",
+                "88f8fd759239145a"
+            ]
+        ]
+    },
+    {
         "id": "58df7d171bfac989",
         "type": "postgreSQLConfig",
         "name": "",
@@ -346,7 +373,8 @@
         "y": 340,
         "wires": [
             [
-                "3f7defbbf5dec990"
+                "3f7defbbf5dec990",
+                "63c4d52d5d73ec84"
             ]
         ]
     },
@@ -681,7 +709,7 @@
         "z": "ab09c729ddbc5d2b",
         "name": "",
         "group": "e27c2ac7935009d8",
-        "order": 2,
+        "order": 3,
         "width": 6,
         "height": 1,
         "passthru": false,
@@ -727,7 +755,7 @@
         "z": "ab09c729ddbc5d2b",
         "group": "e27c2ac7935009d8",
         "name": "Overview",
-        "order": 1,
+        "order": 2,
         "width": 6,
         "height": 6,
         "columns": [],
@@ -938,7 +966,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "parseData",
-        "func": "const inp = msg.payload;\n\nfor (let i in inp) {\n    // Working Time\n    inp[i][\"sum\"] = parseFloat(inp[i][\"sum\"])\n}\n\nreturn msg;",
+        "func": "const inp = msg.payload;\n\nfor (let i in inp) {\n    // Working Time\n    inp[i][\"time\"] = parseFloat(inp[i][\"time\"])\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1031,7 +1059,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "overviewRequest",
-        "func": "msg.query = `\nselect calendar_week, sum(working_time)\nfrom (\n    select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\n    from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n)\ngroup by calendar_week order by calendar_week DESC\n`\n\nif (true) {\n    msg.query = `\n    select \"day_of_year\", sum(\"working_time\")\n    from (\n        select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (DOY from start) as \"day_of_year\"\n        from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n    )\n    group by \"day_of_year\" order by \"day_of_year\" DESC\n    `\n}\n\nreturn msg;",
+        "func": "const grouping = flow.get(\"grouping\")\nmsg.query = `\nselect calendar_week AS KW, sum(working_time) AS Time\nfrom (\n    select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\n    from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n)\ngroup by calendar_week order by calendar_week DESC\n`\n\nif (grouping === 1) {\n    msg.query = `\n    select \"day_of_year\" AS DOY, sum(\"working_time\") AS Time\n    from (\n        select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (DOY from start) as \"day_of_year\"\n        from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n    )\n    group by \"day_of_year\" order by \"day_of_year\" DESC\n    `\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1047,20 +1075,113 @@
         ]
     },
     {
-        "id": "73d1c830104b579f",
-        "type": "postgresql",
-        "z": "f6f2187d.f17ca8",
-        "name": "",
-        "query": "",
-        "postgreSQLConfig": "58df7d171bfac989",
-        "split": false,
-        "rowsPerMsg": 1,
+        "id": "63c4d52d5d73ec84",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "setCurrentDate",
+        "func": "msg.payload = new Date(new Date().getTime() + 2 * 60 * 60 * 1000)\nreturn msg;",
         "outputs": 1,
-        "x": 670,
-        "y": 100,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 220,
+        "y": 720,
         "wires": [
             [
-                "c00c50456a1915d8"
+                "0e63c30350e9e6e7",
+                "78ab10ace9cbd062"
+            ]
+        ]
+    },
+    {
+        "id": "db991fb196015e22",
+        "type": "ui_dropdown",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "label": "Grouping",
+        "tooltip": "Grouping to use",
+        "place": "Select option",
+        "group": "e27c2ac7935009d8",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Calendar Week",
+                "value": 0,
+                "type": "num"
+            },
+            {
+                "label": "Day of Year",
+                "value": 1,
+                "type": "num"
+            }
+        ],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 360,
+        "y": 1260,
+        "wires": [
+            [
+                "b9467be3c8b33b11"
+            ]
+        ]
+    },
+    {
+        "id": "b9467be3c8b33b11",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "grouping",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 1260,
+        "wires": [
+            [
+                "c8936184f999a438"
+            ]
+        ]
+    },
+    {
+        "id": "dbcd0e660579693e",
+        "type": "inject",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 160,
+        "y": 1260,
+        "wires": [
+            [
+                "db991fb196015e22"
             ]
         ]
     },
@@ -1072,14 +1193,14 @@
         "props": [],
         "repeat": "",
         "crontab": "",
-        "once": false,
+        "once": true,
         "onceDelay": 0.1,
         "topic": "",
         "x": 210,
         "y": 100,
         "wires": [
             [
-                "f1bb93a1b04a4a0e"
+                "fd9163014ca32398"
             ]
         ]
     },
@@ -1095,7 +1216,7 @@
         "columns": [],
         "outputs": 1,
         "cts": true,
-        "x": 880,
+        "x": 750,
         "y": 100,
         "wires": [
             [
@@ -1127,34 +1248,7 @@
         "y": 140,
         "wires": [
             [
-                "f1bb93a1b04a4a0e"
-            ]
-        ]
-    },
-    {
-        "id": "f1bb93a1b04a4a0e",
-        "type": "change",
-        "z": "f6f2187d.f17ca8",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "query",
-                "pt": "msg",
-                "to": "SELECT * FROM tblprojects",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 420,
-        "y": 100,
-        "wires": [
-            [
-                "73d1c830104b579f"
+                "fd9163014ca32398"
             ]
         ]
     },
@@ -1192,9 +1286,9 @@
         "z": "f6f2187d.f17ca8",
         "name": "",
         "group": "900443b7c5e5bf2a",
-        "order": 1,
-        "width": 0,
-        "height": 0,
+        "order": 2,
+        "width": 6,
+        "height": 1,
         "passthru": false,
         "label": "Save",
         "tooltip": "Save the new project",
@@ -1219,7 +1313,7 @@
         "type": "function",
         "z": "f6f2187d.f17ca8",
         "name": "Insert Project",
-        "func": "const project_name = flow.get(\"project_name\")\nmsg.query = `insert into tblprojects (name)\nvalues ('${project_name}')`\nreturn msg;",
+        "func": "const project_name = flow.get(\"project_name\")\nconst project_number = flow.get(\"project_number\")\n\nmsg.payload = {\"name\":project_name,\"project_nr\":project_number}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1230,27 +1324,7 @@
         "y": 560,
         "wires": [
             [
-                "179a05eab46e674b"
-            ]
-        ]
-    },
-    {
-        "id": "179a05eab46e674b",
-        "type": "postgresql",
-        "z": "f6f2187d.f17ca8",
-        "name": "",
-        "query": "",
-        "postgreSQLConfig": "58df7d171bfac989",
-        "split": false,
-        "rowsPerMsg": 1,
-        "outputs": 1,
-        "x": 610,
-        "y": 560,
-        "wires": [
-            [
-                "f1bb93a1b04a4a0e",
-                "91b8dbe38a8fc455",
-                "a6bb1bdb43326150"
+                "870f0087bde96e3d"
             ]
         ]
     },
@@ -1312,7 +1386,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 850,
+        "x": 1010,
         "y": 560,
         "wires": [
             [
@@ -1329,8 +1403,8 @@
         "tooltip": "The name of the project",
         "group": "900443b7c5e5bf2a",
         "order": 1,
-        "width": 0,
-        "height": 0,
+        "width": 6,
+        "height": 1,
         "passthru": true,
         "mode": "text",
         "delay": 300,
@@ -1392,8 +1466,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 600,
-        "y": 500,
+        "x": 490,
+        "y": 460,
         "wires": [
             [
                 "91b8dbe38a8fc455"
@@ -1439,12 +1513,234 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1060,
+        "x": 940,
         "y": 100,
         "wires": []
     },
     {
-        "id": "57fa2ce418233fe2",
+        "id": "5d6f05ef90c17f6d",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://backend:80/projects",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 530,
+        "y": 100,
+        "wires": [
+            [
+                "c00c50456a1915d8"
+            ]
+        ]
+    },
+    {
+        "id": "870f0087bde96e3d",
+        "type": "http request",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://backend:80/projects",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 570,
+        "y": 560,
+        "wires": [
+            [
+                "d9c1f31e55e90846"
+            ]
+        ]
+    },
+    {
+        "id": "d9c1f31e55e90846",
+        "type": "switch",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "num"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 750,
+        "y": 560,
+        "wires": [
+            [
+                "135ff4718eb96aef"
+            ],
+            [
+                "9d84062f642dc16e",
+                "fa66a4e76dc1f502"
+            ]
+        ]
+    },
+    {
+        "id": "cc286c26258ddca7",
+        "type": "ui_toast",
+        "z": "f6f2187d.f17ca8",
+        "position": "dialog",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": false,
+        "outputs": 1,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 1230,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9d84062f642dc16e",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.detail[0].msg",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1010,
+        "y": 620,
+        "wires": [
+            [
+                "cc286c26258ddca7"
+            ]
+        ]
+    },
+    {
+        "id": "fa66a4e76dc1f502",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1000,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "88f8fd759239145a",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 290,
+        "y": 740,
+        "wires": [
+            [
+                "e26849230bcea553"
+            ]
+        ]
+    },
+    {
+        "id": "e26849230bcea553",
+        "type": "ui_text_input",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "label": "Project Number",
+        "tooltip": "The name of the project",
+        "group": "900443b7c5e5bf2a",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 520,
+        "y": 740,
+        "wires": [
+            [
+                "9dec9a992445a6f0"
+            ]
+        ]
+    },
+    {
+        "id": "9dec9a992445a6f0",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "project_number",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 780,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2de3844a924d7af4",
         "type": "global-config",
         "env": [],
         "modules": {
