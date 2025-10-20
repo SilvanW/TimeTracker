@@ -22,8 +22,26 @@ def create_project(project: CreateProject, session: SessionDep) -> Project:
     return db_project
 
 
+@router.put("/{project_id}")
+def update_project(
+    project_id: int, project: CreateProject, session: SessionDep
+) -> Project:
+    db_project = session.get(Project, project_id)
+
+    if not db_project:
+        return {"error": "Project not found"}
+
+    for key, value in project.model_dump().items():
+        setattr(db_project, key, value)
+
+    session.add(db_project)
+    session.commit()
+    session.refresh(db_project)
+    return db_project
+
+
 @router.delete("/{project_id}")
-def delete_project(project_id: int, session: SessionDep):
+def delete_project(project_id: int, session: SessionDep) -> dict:
     project = session.get(Project, project_id)
 
     if not project:

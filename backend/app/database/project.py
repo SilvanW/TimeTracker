@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 
 class CreateProject(BaseModel):
     name: str
+    project_nr: int
 
 
 class Project(SQLModel, table=True):
