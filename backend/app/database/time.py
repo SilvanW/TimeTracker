@@ -12,8 +12,8 @@ class CreateTime(BaseModel):
 
 
 class Time(SQLModel, table=True):
-    __tablename__ = "TblTime"
+    __tablename__ = "tbltime"
     id: Optional[int] = Field(default=None, primary_key=True)
-    project_id: int = Field(foreign_key="TblProjects.id")
+    project_id: int = Field(foreign_key="tblprojects.id")
     start: datetime
     end: datetime
