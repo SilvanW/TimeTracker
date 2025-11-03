@@ -793,51 +793,6 @@
         ]
     },
     {
-        "id": "8e60fccf1c087e56",
-        "type": "change",
-        "z": "ab09c729ddbc5d2b",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "query",
-                "pt": "msg",
-                "to": "select * from tblprojects",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 380,
-        "y": 1000,
-        "wires": [
-            [
-                "43b3804b4aae6d8c"
-            ]
-        ]
-    },
-    {
-        "id": "43b3804b4aae6d8c",
-        "type": "postgresql",
-        "z": "ab09c729ddbc5d2b",
-        "name": "",
-        "query": "",
-        "postgreSQLConfig": "58df7d171bfac989",
-        "split": false,
-        "rowsPerMsg": 1,
-        "outputs": 1,
-        "x": 610,
-        "y": 1000,
-        "wires": [
-            [
-                "d5631e9e7762fb5c"
-            ]
-        ]
-    },
-    {
         "id": "91708ab71f2576a3",
         "type": "inject",
         "z": "ab09c729ddbc5d2b",
@@ -862,7 +817,7 @@
         "y": 1000,
         "wires": [
             [
-                "8e60fccf1c087e56"
+                "dc4017a1afbcc696"
             ]
         ]
     },
@@ -1059,7 +1014,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "overviewRequest",
-        "func": "const grouping = flow.get(\"grouping\")\nmsg.query = `\nselect calendar_week AS KW, sum(working_time) AS Time\nfrom (\n    select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\n    from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n)\ngroup by calendar_week order by calendar_week DESC\n`\n\nif (grouping === 1) {\n    msg.query = `\n    select \"day_of_year\" AS DOY, sum(\"working_time\") AS Time\n    from (\n        select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (DOY from start) as \"day_of_year\"\n        from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n    )\n    group by \"day_of_year\" order by \"day_of_year\" DESC\n    `\n}\n\nreturn msg;",
+        "func": "const grouping = flow.get(\"grouping\")\nmsg.query = `\nselect calendar_week AS KW, sum(working_time) AS Time\nfrom (\n    select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\n    from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n)\ngroup by calendar_week order by calendar_week DESC\n`\n\nif (grouping === 1) {\n    msg.query = `\n    select \"day_of_year\" AS DOY, sum(\"working_time\") AS Time\n    from (\n        select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (DOY from start) as \"day_of_year\"\n        from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n    )\n    group by \"day_of_year\" order by \"day_of_year\" DESC\n    `\n}\n\nif (grouping === 2) {\n    msg.query = `\n    select \"project_name\", sum(\"working_time\") AS Time\n    from (\n        select tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (DOY from start) as \"day_of_year\"\n        from tbltime left join tblprojects on tblprojects.id = tbltime.project_id\n    )\n    group by \"project_name\"\n    `\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1118,6 +1073,11 @@
             {
                 "label": "Day of Year",
                 "value": 1,
+                "type": "num"
+            },
+            {
+                "label": "Project",
+                "value": 2,
                 "type": "num"
             }
         ],
@@ -1182,6 +1142,47 @@
         "wires": [
             [
                 "db991fb196015e22"
+            ]
+        ]
+    },
+    {
+        "id": "65d6afba143d1b8d",
+        "type": "debug",
+        "z": "ab09c729ddbc5d2b",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 950,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "dc4017a1afbcc696",
+        "type": "http request",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://backend:80/projects",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 430,
+        "y": 1000,
+        "wires": [
+            [
+                "d5631e9e7762fb5c",
+                "65d6afba143d1b8d"
             ]
         ]
     },
@@ -1740,7 +1741,7 @@
         ]
     },
     {
-        "id": "2de3844a924d7af4",
+        "id": "dbe9bbddbffa823a",
         "type": "global-config",
         "env": [],
         "modules": {
