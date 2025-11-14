@@ -9,6 +9,7 @@ class CreateTime(BaseModel):
     project_id: int
     start: datetime
     end: datetime
+    description: Optional[str] = None
 
 
 class Time(SQLModel, table=True):
@@ -17,3 +18,4 @@ class Time(SQLModel, table=True):
     project_id: int = Field(foreign_key="tblprojects.id")
     start: datetime
     end: datetime
+    description: Optional[str] = Field(default=None)
