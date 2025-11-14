@@ -3,7 +3,7 @@
 Start the backend using the following command in dev mode
 
 ```shell
-fastapi dev main.py
+uv run fastapi dev app/main.py
 ```
 
 ## Database Migration
@@ -13,6 +13,8 @@ Create a new migration script using the following command.
 ```shell
 alembic revision -m "create account table"
 ```
+
+Write the migration scirpt in the newly generated script under `alembic/versions`
 
 Run the migration script
 
