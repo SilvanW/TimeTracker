@@ -15,3 +15,5 @@ Simple time tracking application for local deployment.
 - year in overview
 - overview of single day
 - add where work was done (home of office)
+- add description per day
+- llm call to get short summary of week based on description
