@@ -17,3 +17,4 @@ Simple time tracking application for local deployment.
 - add where work was done (home of office)
 - add description per day
 - llm call to get short summary of week based on description
+- connect to git repositories to summarize commits
