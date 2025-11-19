@@ -15,6 +15,14 @@
         "info": ""
     },
     {
+        "id": "44cdabf9d1588c75",
+        "type": "tab",
+        "label": "Agent",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "fd9163014ca32398",
         "type": "junction",
         "z": "f6f2187d.f17ca8",
@@ -47,7 +55,7 @@
         "name": "",
         "host": "postgres",
         "hostFieldType": "str",
-        "port": 5432,
+        "port": "5432",
         "portFieldType": "num",
         "database": "postgres",
         "databaseFieldType": "str",
@@ -237,6 +245,17 @@
         "className": ""
     },
     {
+        "id": "6447a39e5d789f8e",
+        "type": "ui_group",
+        "name": "Description",
+        "tab": "6311d57cd4e85433",
+        "order": 4,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
         "id": "d61146a7a8c0c366",
         "type": "ui_button",
         "z": "ab09c729ddbc5d2b",
@@ -278,7 +297,8 @@
         "y": 160,
         "wires": [
             [
-                "0b41b15fa9c996ac"
+                "0b41b15fa9c996ac",
+                "f8c060451965c02d"
             ]
         ]
     },
@@ -341,6 +361,16 @@
                 "formatterParams": {
                     "target": "_blank"
                 }
+            },
+            {
+                "field": "description",
+                "title": "Description",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
             }
         ],
         "outputs": 0,
@@ -374,7 +404,8 @@
         "wires": [
             [
                 "3f7defbbf5dec990",
-                "63c4d52d5d73ec84"
+                "63c4d52d5d73ec84",
+                "838fe4cec443e945"
             ]
         ]
     },
@@ -411,7 +442,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "Insert Project",
-        "func": "const start = flow.get(\"start\")\nconst end = flow.get(\"end\")\nconst project_id = flow.get(\"project_id\")\n\nmsg.query = `insert into tbltime (\"project_id\", \"start\", \"end\")\nvalues (${project_id}, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000))`\n\nreturn msg;",
+        "func": "const start = flow.get(\"start\")\nconst end = flow.get(\"end\")\nconst project_id = flow.get(\"project_id\")\nconst description = flow.get(\"description\")\n\nif (description !== \"\") {\n    msg.query = `insert into tbltime (\"project_id\", \"start\", \"end\", \"description\")\n    values (${project_id}, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000), '${description}')`\n} else {\n    msg.query = `insert into tbltime (\"project_id\", \"start\", \"end\")\n    values (${project_id}, to_timestamp(${start} / 1000), to_timestamp(${end} / 1000))`\n}\n\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -994,7 +1025,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "detailRequest",
-        "func": "const filter = flow.get(\"filter\")\n\n// Query without filter\nmsg.query = `\nselect tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\nfrom tbltime\nleft join tblprojects on tblprojects.id = tbltime.project_id`\n\nif (filter === undefined) {\n    return msg;\n}\n\nif (filter[\"calendar_week\"] === null) {\n    return msg;\n}\n\nmsg.query = `\nselect tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\"\nfrom tbltime\nleft join tblprojects on tblprojects.id = tbltime.project_id\nwhere extract (week from start) = ${filter[\"calendar_week\"]}`\n\nreturn msg;",
+        "func": "const filter = flow.get(\"filter\")\n\n// Query without filter\nmsg.query = `\nselect tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\", tbltime.description\nfrom tbltime\nleft join tblprojects on tblprojects.id = tbltime.project_id`\n\nif (filter === undefined) {\n    return msg;\n}\n\nif (filter[\"calendar_week\"] === null) {\n    return msg;\n}\n\nmsg.query = `\nselect tbltime.id, tblprojects.name as \"project_name\", \"start\", \"end\", extract(epoch from \"end\"-\"start\") / 3600 as \"working_time\", extract (week from start) as \"calendar_week\", tbltime.description\nfrom tbltime\nleft join tblprojects on tblprojects.id = tbltime.project_id\nwhere extract (week from start) = ${filter[\"calendar_week\"]}`\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1184,6 +1215,100 @@
                 "d5631e9e7762fb5c",
                 "65d6afba143d1b8d"
             ]
+        ]
+    },
+    {
+        "id": "f8c060451965c02d",
+        "type": "debug",
+        "z": "ab09c729ddbc5d2b",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "5a32812ca3b61adc",
+        "type": "ui_text_input",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "label": "Description",
+        "tooltip": "",
+        "group": "60e61f80a5ae1033",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 450,
+        "y": 800,
+        "wires": [
+            [
+                "5b5bbc7faef3aac5"
+            ]
+        ]
+    },
+    {
+        "id": "838fe4cec443e945",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 230,
+        "y": 800,
+        "wires": [
+            [
+                "5a32812ca3b61adc"
+            ]
+        ]
+    },
+    {
+        "id": "5b5bbc7faef3aac5",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "description",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 700,
+        "y": 800,
+        "wires": [
+            []
         ]
     },
     {
@@ -1741,7 +1866,508 @@
         ]
     },
     {
-        "id": "dbe9bbddbffa823a",
+        "id": "397f0440df61b4b0",
+        "type": "inject",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 100,
+        "wires": [
+            [
+                "38b9bf0138d6efed"
+            ]
+        ]
+    },
+    {
+        "id": "5ee45b6e820e5ed1",
+        "type": "http request",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://host.docker.internal:1234/v1/chat/completions",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 670,
+        "y": 100,
+        "wires": [
+            [
+                "931ccf69ac7337d5"
+            ]
+        ]
+    },
+    {
+        "id": "4400c5038f420b00",
+        "type": "debug",
+        "z": "44cdabf9d1588c75",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1000,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "38b9bf0138d6efed",
+        "type": "function",
+        "z": "44cdabf9d1588c75",
+        "name": "function 1",
+        "func": "const inp = msg.payload\n\nconst system_prompt = `\nThe user will give you a list of tasks he finished in the last working time period.\nReturn a short sentence summary of what the did.\nDo not add any additional information or try to define any word or topic.\n`\n\nmsg.payload = {\n    \"model\": \"google/gemma-3n-e4b\",\n    \"messages\": [ \n      { \"role\": \"system\", \"content\": system_prompt},\n      { \"role\": \"user\", \"content\": inp.join('\\n')}\n    ], \n    \"temperature\": 0.1, \n    \"max_tokens\": -1,\n    \"stream\": false\n  };\nmsg.headers = {};\nmsg.headers['Content-Type'] = 'application/json';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 100,
+        "wires": [
+            [
+                "5ee45b6e820e5ed1"
+            ]
+        ]
+    },
+    {
+        "id": "931ccf69ac7337d5",
+        "type": "function",
+        "z": "44cdabf9d1588c75",
+        "name": "function 2",
+        "func": "const inp = msg.payload.choices[0].message.content\n\nfunction extractNonThinkingMessage(text) {\n  // Removes the <think>...</think> tags and their content\n  return text.replace(/<think>[\\s\\S]*?<\\/think>/g, '').trim();\n}\n\nmsg.payload = extractNonThinkingMessage(inp)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 200,
+        "wires": [
+            [
+                "4400c5038f420b00",
+                "b081aabb4c922c50"
+            ]
+        ]
+    },
+    {
+        "id": "96cffe3ba9be0162",
+        "type": "http request",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 510,
+        "y": 400,
+        "wires": [
+            [
+                "5960ba31a728233a"
+            ]
+        ]
+    },
+    {
+        "id": "d6e733f64b0a561f",
+        "type": "inject",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 380,
+        "wires": [
+            [
+                "00c8ae72af18f7a2"
+            ]
+        ]
+    },
+    {
+        "id": "01c6de83b3a91ab6",
+        "type": "debug",
+        "z": "44cdabf9d1588c75",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 860,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "00c8ae72af18f7a2",
+        "type": "function",
+        "z": "44cdabf9d1588c75",
+        "name": "function 3",
+        "func": "const start = flow.get(\"start\") || null\nconst end = flow.get(\"end\") || null\n\nif (start !== null && end !== null) {\n    msg.url = `http://host.docker.internal:8000/time/?start_date=${new Date(start).toISOString().split('T')[0]}&end_date=${new Date(end).toISOString().split('T')[0]}`\n    return msg;\n}\n\nif (start !== null) {\n    msg.url = `http://host.docker.internal:8000/time/?start_date=${new Date(start).toISOString().split('T')[0]}`\n    return msg;\n}\n\nif (end !== null) {\n    msg.url = `http://host.docker.internal:8000/time/?end_date=${new Date(start).toISOString().split('T')[0]}`\n    return msg;\n}\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 380,
+        "wires": [
+            [
+                "96cffe3ba9be0162"
+            ]
+        ]
+    },
+    {
+        "id": "4d327ce2264b9348",
+        "type": "function",
+        "z": "44cdabf9d1588c75",
+        "name": "function 4",
+        "func": "const inp = msg.payload\n\nvar descriptions = []\n\nfor (let task of inp) {\n    if (task.description === null) {\n        continue\n    }\n\n    if (descriptions.includes(task.description)) {\n        continue\n    }\n\n    descriptions.push(task.description)\n}\nmsg.payload = descriptions\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 500,
+        "wires": [
+            [
+                "01c6de83b3a91ab6",
+                "38b9bf0138d6efed"
+            ]
+        ]
+    },
+    {
+        "id": "5960ba31a728233a",
+        "type": "change",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "rules": [
+            {
+                "t": "delete",
+                "p": "url",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 460,
+        "wires": [
+            [
+                "4d327ce2264b9348"
+            ]
+        ]
+    },
+    {
+        "id": "b081aabb4c922c50",
+        "type": "ui_template",
+        "z": "44cdabf9d1588c75",
+        "group": "6447a39e5d789f8e",
+        "name": "",
+        "order": 4,
+        "width": 6,
+        "height": 4,
+        "format": "<!-- Node-RED ui_template: display text + copy button -->\n<div class=\"nr-copy-card\">\n  <div class=\"nr-copy-text\" id=\"nr-copy-text\">{{text}}</div>\n  <div class=\"nr-copy-actions\">\n    <button class=\"nr-copy-btn\" ng-click=\"copy()\" ng-disabled=\"!text\">Copy</button>\n    <span class=\"nr-copy-feedback\" ng-show=\"copied\">Copied ✓</span>\n  </div>\n</div>\n\n<style>\n  .nr-copy-card {\n    display: flex;\n    flex-direction: column;\n    gap: 8px;\n    padding: 10px;\n    border-radius: 6px;\n    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);\n    background: #fff;\n    min-width: 200px;\n  }\n\n  .nr-copy-text {\n    white-space: pre-wrap;\n    /* preserve newlines */\n    word-wrap: break-word;\n    font-family: inherit;\n    font-size: 14px;\n    color: #222;\n    padding: 6px;\n    border-radius: 4px;\n    border: 1px solid #eee;\n    background: #fafafa;\n    min-height: 36px;\n  }\n\n  .nr-copy-actions {\n    display: flex;\n    align-items: center;\n    gap: 8px;\n  }\n\n  .nr-copy-btn {\n    padding: 6px 10px;\n    border-radius: 4px;\n    border: 1px solid #bbb;\n    background: #f4f4f4;\n    cursor: pointer;\n  }\n\n  .nr-copy-btn[ng-disabled] {\n    opacity: 0.5;\n    cursor: not-allowed;\n  }\n\n  .nr-copy-feedback {\n    color: #0a0;\n    font-size: 13px;\n  }\n</style>\n\n<script>\n  (function(scope) {\n  // initial value (in case you want a static default)\n  scope.text = (scope.msg && (scope.msg.payload || scope.msg.payload === 0)) ? scope.msg.payload : '';\n\n  // Watch for incoming messages (update displayed text when msg arrives)\n  scope.$watch('msg', function(msg) {\n    if (!msg) return;\n    // Use msg.payload (string or convertable)\n    if (typeof msg.payload === 'object') {\n      try {\n        scope.text = JSON.stringify(msg.payload, null, 2);\n      } catch (e) {\n        scope.text = String(msg.payload);\n      }\n    } else {\n      scope.text = (msg.payload === null || msg.payload === undefined) ? '' : String(msg.payload);\n    }\n  });\n\n  // copy function: try navigator.clipboard, fallback to textarea + execCommand\n  scope.copy = function() {\n    if (!scope.text) return;\n    var textToCopy = scope.text;\n\n    // Preferred modern API\n    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {\n      navigator.clipboard.writeText(textToCopy).then(function() {\n        showCopied();\n      }).catch(function() {\n        fallbackCopy(textToCopy);\n      });\n    } else {\n      fallbackCopy(textToCopy);\n    }\n  };\n\n  function fallbackCopy(str) {\n    try {\n      var ta = document.createElement('textarea');\n      ta.value = str;\n      // prevent page scroll/visual flash\n      ta.style.position = 'fixed';\n      ta.style.top = '-9999px';\n      ta.style.left = '-9999px';\n      document.body.appendChild(ta);\n      ta.focus();\n      ta.select();\n      var ok = document.execCommand('copy');\n      document.body.removeChild(ta);\n      if (ok) showCopied();\n      else showCopyFailed();\n    } catch (e) {\n      showCopyFailed();\n    }\n  }\n\n  function showCopied() {\n    scope.copied = true;\n    scope.$applyAsync();\n    setTimeout(function() {\n      scope.copied = false;\n      scope.$applyAsync();\n    }, 1500);\n  }\n\n  function showCopyFailed() {\n    // briefly show a failure message (optional)\n    scope.copied = false;\n    scope.$applyAsync();\n    // you could add a visual failure state here if desired\n  }\n\n})(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 960,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "183e62f0b5295ca8",
+        "type": "ui_text_input",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "label": "Start",
+        "tooltip": "Work start time",
+        "group": "6447a39e5d789f8e",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "week",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 530,
+        "y": 600,
+        "wires": [
+            [
+                "b96369db7dfc9f36"
+            ]
+        ]
+    },
+    {
+        "id": "b96369db7dfc9f36",
+        "type": "change",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "start",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 780,
+        "y": 600,
+        "wires": [
+            [
+                "4f9ebcfc33c5d2c2"
+            ]
+        ]
+    },
+    {
+        "id": "f896a2b18472e0cf",
+        "type": "ui_button",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "group": "6447a39e5d789f8e",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "label": "Generate Summary",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-magic",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 570,
+        "y": 720,
+        "wires": [
+            [
+                "00c8ae72af18f7a2"
+            ]
+        ]
+    },
+    {
+        "id": "4f9ebcfc33c5d2c2",
+        "type": "ui_text_input",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "label": "End",
+        "tooltip": "Work end time",
+        "group": "6447a39e5d789f8e",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "week",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 530,
+        "y": 660,
+        "wires": [
+            [
+                "c0df43d34fc59f96"
+            ]
+        ]
+    },
+    {
+        "id": "c0df43d34fc59f96",
+        "type": "change",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "end",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 780,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bfe788b47c9c83d3",
+        "type": "function",
+        "z": "44cdabf9d1588c75",
+        "name": "setCurrentDate",
+        "func": "msg.payload = new Date(new Date().getTime() + 2 * 60 * 60 * 1000)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 600,
+        "wires": [
+            [
+                "183e62f0b5295ca8",
+                "4f9ebcfc33c5d2c2"
+            ]
+        ]
+    },
+    {
+        "id": "991d03e4328fe93b",
+        "type": "inject",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 600,
+        "wires": [
+            [
+                "bfe788b47c9c83d3"
+            ]
+        ]
+    },
+    {
+        "id": "d78be42c692ad9de",
+        "type": "ui_button",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "group": "6447a39e5d789f8e",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Clear",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "red",
+        "className": "",
+        "icon": "fa-trash",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 530,
+        "y": 240,
+        "wires": [
+            [
+                "2edd1a9e348a6b0e"
+            ]
+        ]
+    },
+    {
+        "id": "2edd1a9e348a6b0e",
+        "type": "change",
+        "z": "44cdabf9d1588c75",
+        "name": "",
+        "rules": [
+            {
+                "t": "delete",
+                "p": "payload",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 760,
+        "y": 240,
+        "wires": [
+            [
+                "b081aabb4c922c50"
+            ]
+        ]
+    },
+    {
+        "id": "3c53268efe2df4c6",
         "type": "global-config",
         "env": [],
         "modules": {
