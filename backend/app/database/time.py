@@ -12,6 +12,11 @@ class CreateTime(BaseModel):
     description: Optional[str] = None
 
 
+class ProjectTime(BaseModel):
+    project_name: str
+    total_time: float
+
+
 class Time(SQLModel, table=True):
     __tablename__ = "tbltime"
     id: Optional[int] = Field(default=None, primary_key=True)

@@ -256,6 +256,17 @@
         "className": ""
     },
     {
+        "id": "6175b0526f8d2ee2",
+        "type": "ui_group",
+        "name": "Calendar Week",
+        "tab": "6311d57cd4e85433",
+        "order": 5,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
         "id": "d61146a7a8c0c366",
         "type": "ui_button",
         "z": "ab09c729ddbc5d2b",
@@ -297,8 +308,7 @@
         "y": 160,
         "wires": [
             [
-                "0b41b15fa9c996ac",
-                "f8c060451965c02d"
+                "0b41b15fa9c996ac"
             ]
         ]
     },
@@ -415,7 +425,7 @@
         "z": "ab09c729ddbc5d2b",
         "name": "",
         "group": "60e61f80a5ae1033",
-        "order": 4,
+        "order": 5,
         "width": 6,
         "height": 1,
         "passthru": false,
@@ -790,11 +800,15 @@
         "width": 6,
         "height": 6,
         "columns": [],
-        "outputs": 0,
-        "cts": false,
+        "outputs": 1,
+        "cts": true,
         "x": 1040,
         "y": 80,
-        "wires": []
+        "wires": [
+            [
+                "0f4a65295751512a"
+            ]
+        ]
     },
     {
         "id": "f37792554d479b73",
@@ -1218,22 +1232,6 @@
         ]
     },
     {
-        "id": "f8c060451965c02d",
-        "type": "debug",
-        "z": "ab09c729ddbc5d2b",
-        "name": "debug 4",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 790,
-        "y": 260,
-        "wires": []
-    },
-    {
         "id": "5a32812ca3b61adc",
         "type": "ui_text_input",
         "z": "ab09c729ddbc5d2b",
@@ -1242,8 +1240,8 @@
         "tooltip": "",
         "group": "60e61f80a5ae1033",
         "order": 4,
-        "width": 0,
-        "height": 0,
+        "width": 6,
+        "height": 1,
         "passthru": true,
         "mode": "text",
         "delay": 300,
@@ -1310,6 +1308,66 @@
         "wires": [
             []
         ]
+    },
+    {
+        "id": "0f4a65295751512a",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "function 5",
+        "func": "const inp = msg.payload;\n\nif (!(\"kw\" in inp)) {\n    return null;\n}\n\nmsg.url = `http://host.docker.internal:8000/time/project?calendar_week=${inp.kw}`\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 80,
+        "wires": [
+            [
+                "f622be2eb401768e"
+            ]
+        ]
+    },
+    {
+        "id": "f622be2eb401768e",
+        "type": "http request",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1450,
+        "y": 80,
+        "wires": [
+            [
+                "81ec602561ee12f5"
+            ]
+        ]
+    },
+    {
+        "id": "81ec602561ee12f5",
+        "type": "ui_table",
+        "z": "ab09c729ddbc5d2b",
+        "group": "6175b0526f8d2ee2",
+        "name": "KW Overview",
+        "order": 2,
+        "width": 6,
+        "height": 6,
+        "columns": [],
+        "outputs": 0,
+        "cts": false,
+        "x": 1680,
+        "y": 80,
+        "wires": []
     },
     {
         "id": "dee22348bf8df201",
@@ -2319,7 +2377,7 @@
         "z": "44cdabf9d1588c75",
         "name": "",
         "group": "6447a39e5d789f8e",
-        "order": 4,
+        "order": 5,
         "width": 0,
         "height": 0,
         "passthru": false,
@@ -2367,7 +2425,7 @@
         ]
     },
     {
-        "id": "3c53268efe2df4c6",
+        "id": "de7ec02da760dd79",
         "type": "global-config",
         "env": [],
         "modules": {
