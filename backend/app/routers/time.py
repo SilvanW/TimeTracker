@@ -1,17 +1,49 @@
+from enum import Enum
 from typing import Optional
 from fastapi import APIRouter
-from sqlmodel import select, func
+from sqlmodel import desc, select, func
 
 from app.database.db import SessionDep
-from app.database.time import CreateTime, Time, ProjectTime
+from app.database.time import CreateTime, KWTime, Time, ProjectTime
 from app.database.project import Project
 
 router = APIRouter(prefix="/time", tags=["time"])
 
 
 @router.get("/")
-def read_time(session: SessionDep) -> list[Time]:
-    time = session.exec(select(Time)).all()
+def read_time(session: SessionDep, year: Optional[int] = None) -> list[Time]:
+    query = select(Time)
+
+    if year is not None:
+        query = query.where(func.extract("year", Time.start) == year)
+
+    time = session.exec(query).all()
+    return time
+
+
+@router.get("/calendar_week")
+def get_time_by_calendar_week(
+    session: SessionDep, year: Optional[int] = None
+) -> list[KWTime]:
+    query = (
+        select(
+            func.extract("year", Time.start).label("year"),
+            func.extract("week", Time.start).label("calendar_week"),
+            func.sum(func.extract("epoch", Time.end - Time.start) / 3600.0).label(
+                "total_time"
+            ),
+        )
+        .group_by(func.extract("year", Time.start), func.extract("week", Time.start))
+        .order_by(
+            desc(func.extract("year", Time.start)),
+            desc(func.extract("week", Time.start)),
+        )
+    )
+
+    if year is not None:
+        query = query.where(func.extract("year", Time.start) == year)
+
+    time = session.exec(query).all()
     return time
 
 

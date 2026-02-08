@@ -17,6 +17,12 @@ class ProjectTime(BaseModel):
     total_time: float
 
 
+class KWTime(BaseModel):
+    year: int
+    calendar_week: int
+    total_time: float
+
+
 class Time(SQLModel, table=True):
     __tablename__ = "tbltime"
     id: Optional[int] = Field(default=None, primary_key=True)

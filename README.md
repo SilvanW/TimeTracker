@@ -10,7 +10,7 @@ Simple time tracking application for local deployment.
 - [x] Detail view filtered by project and calendar week
 - [ ] In the detail view, separate hours, time, and date for better readability
 - [ ] get pg schema from sql file
-- [ ] define expected calendar week time target for comparison
+- [x] define expected calendar week time target for comparison
 - [ ] year in overview
 - [ ] overview of single day
 - [ ] add where work was done (home of office)

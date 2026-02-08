@@ -8,6 +8,14 @@
         "env": []
     },
     {
+        "id": "5a58fcd80e44db05",
+        "type": "tab",
+        "label": "Overview",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "f6f2187d.f17ca8",
         "type": "tab",
         "label": "Settings",
@@ -240,7 +248,7 @@
         "tab": "6311d57cd4e85433",
         "order": 1,
         "disp": true,
-        "width": 6,
+        "width": 8,
         "collapse": false,
         "className": ""
     },
@@ -750,8 +758,8 @@
         "z": "ab09c729ddbc5d2b",
         "name": "",
         "group": "e27c2ac7935009d8",
-        "order": 3,
-        "width": 6,
+        "order": 5,
+        "width": 8,
         "height": 1,
         "passthru": false,
         "label": "Refresh",
@@ -768,7 +776,8 @@
         "y": 80,
         "wires": [
             [
-                "c8936184f999a438"
+                "c8936184f999a438",
+                "b817e6d382a7b15a"
             ]
         ]
     },
@@ -796,8 +805,8 @@
         "z": "ab09c729ddbc5d2b",
         "group": "e27c2ac7935009d8",
         "name": "Overview",
-        "order": 2,
-        "width": 6,
+        "order": 3,
+        "width": 8,
         "height": 6,
         "columns": [],
         "outputs": 1,
@@ -1104,8 +1113,8 @@
         "tooltip": "Grouping to use",
         "place": "Select option",
         "group": "e27c2ac7935009d8",
-        "order": 1,
-        "width": 6,
+        "order": 2,
+        "width": 8,
         "height": 1,
         "passthru": true,
         "multiple": false,
@@ -1161,7 +1170,8 @@
         "y": 1260,
         "wires": [
             [
-                "c8936184f999a438"
+                "c8936184f999a438",
+                "bc7f96b9d2683920"
             ]
         ]
     },
@@ -1359,7 +1369,7 @@
         "z": "ab09c729ddbc5d2b",
         "group": "6175b0526f8d2ee2",
         "name": "KW Overview",
-        "order": 2,
+        "order": 1,
         "width": 6,
         "height": 6,
         "columns": [],
@@ -1368,6 +1378,354 @@
         "x": 1680,
         "y": 80,
         "wires": []
+    },
+    {
+        "id": "bc7f96b9d2683920",
+        "type": "link out",
+        "z": "ab09c729ddbc5d2b",
+        "name": "overview grouping",
+        "mode": "link",
+        "links": [
+            "6179bc0467ea440a"
+        ],
+        "x": 745,
+        "y": 1280,
+        "wires": []
+    },
+    {
+        "id": "b817e6d382a7b15a",
+        "type": "link out",
+        "z": "ab09c729ddbc5d2b",
+        "name": "Refresh Overview",
+        "mode": "link",
+        "links": [
+            "f337ddfe64f5a13e"
+        ],
+        "x": 545,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "79732774238bebc1",
+        "type": "ui_table",
+        "z": "5a58fcd80e44db05",
+        "group": "e27c2ac7935009d8",
+        "name": "Overview New",
+        "order": 4,
+        "width": 8,
+        "height": 6,
+        "columns": [],
+        "outputs": 1,
+        "cts": true,
+        "x": 1060,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "830b6fc3b140b49c",
+        "type": "http request",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "query",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 550,
+        "y": 120,
+        "wires": [
+            [
+                "8217a84f2096a2bd"
+            ]
+        ]
+    },
+    {
+        "id": "6f111b31a6840ab7",
+        "type": "function",
+        "z": "5a58fcd80e44db05",
+        "name": "function 6",
+        "func": "msg.url = \"http://backend:80/time\"\n\nlet grouping = flow.get(\"grouping\")\n\n// Group by Calendar week\nif (grouping == 0) {\n    msg.url = \"http://backend:80/time/calendar_week\"\n}\n\nmsg.payload = flow.get(\"filter\")\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 120,
+        "wires": [
+            [
+                "830b6fc3b140b49c"
+            ]
+        ]
+    },
+    {
+        "id": "3136f67612a5a519",
+        "type": "ui_text_input",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "label": "Year",
+        "tooltip": "Filter the Overview by Year",
+        "group": "e27c2ac7935009d8",
+        "order": 1,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 150,
+        "y": 220,
+        "wires": [
+            [
+                "8809da8a24eeae4a"
+            ]
+        ]
+    },
+    {
+        "id": "0b897e11b0f96993",
+        "type": "change",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "filter.year",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 530,
+        "y": 220,
+        "wires": [
+            [
+                "6f111b31a6840ab7"
+            ]
+        ]
+    },
+    {
+        "id": "6179bc0467ea440a",
+        "type": "link in",
+        "z": "5a58fcd80e44db05",
+        "name": "link in 1",
+        "links": [
+            "bc7f96b9d2683920"
+        ],
+        "x": 165,
+        "y": 440,
+        "wires": [
+            [
+                "2296d0e428ed1323"
+            ]
+        ]
+    },
+    {
+        "id": "2296d0e428ed1323",
+        "type": "change",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "grouping",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 440,
+        "wires": [
+            [
+                "6f111b31a6840ab7"
+            ]
+        ]
+    },
+    {
+        "id": "7ac02ec7d4793242",
+        "type": "inject",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 320,
+        "wires": [
+            [
+                "e44702da8ebd1bf4"
+            ]
+        ]
+    },
+    {
+        "id": "8809da8a24eeae4a",
+        "type": "switch",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 310,
+        "y": 220,
+        "wires": [
+            [
+                "0b897e11b0f96993"
+            ],
+            [
+                "a138c4da5997f223"
+            ]
+        ]
+    },
+    {
+        "id": "a138c4da5997f223",
+        "type": "change",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "rules": [
+            {
+                "t": "delete",
+                "p": "filter.year",
+                "pt": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 540,
+        "y": 260,
+        "wires": [
+            [
+                "6f111b31a6840ab7"
+            ]
+        ]
+    },
+    {
+        "id": "e44702da8ebd1bf4",
+        "type": "function",
+        "z": "5a58fcd80e44db05",
+        "name": "Reset Input",
+        "func": "msg.payload = null\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 320,
+        "wires": [
+            [
+                "3136f67612a5a519"
+            ]
+        ]
+    },
+    {
+        "id": "f337ddfe64f5a13e",
+        "type": "link in",
+        "z": "5a58fcd80e44db05",
+        "name": "link in 2",
+        "links": [
+            "b817e6d382a7b15a"
+        ],
+        "x": 125,
+        "y": 60,
+        "wires": [
+            [
+                "6f111b31a6840ab7"
+            ]
+        ]
+    },
+    {
+        "id": "4b4c609eb196e862",
+        "type": "inject",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "6f111b31a6840ab7"
+            ]
+        ]
+    },
+    {
+        "id": "8217a84f2096a2bd",
+        "type": "function",
+        "z": "5a58fcd80e44db05",
+        "name": "Check Working Time",
+        "func": "const inp = msg.payload\nconst ExpectedWeeklyWorktime = 43;\nlet grouping = flow.get(\"grouping\")\n\n// Group by calendarweek\nif (grouping == 0) {\n    for (let group of inp) {\n        node.warn(group)\n        if (group.total_time >= ExpectedWeeklyWorktime) {\n            group[\"target_reached\"] = \"Yes\"\n        } else {\n            group[\"target_reached\"] = \"No\"\n        }\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 120,
+        "wires": [
+            [
+                "79732774238bebc1"
+            ]
+        ]
     },
     {
         "id": "dee22348bf8df201",
@@ -2425,7 +2783,7 @@
         ]
     },
     {
-        "id": "de7ec02da760dd79",
+        "id": "bf542087ae630c76",
         "type": "global-config",
         "env": [],
         "modules": {
