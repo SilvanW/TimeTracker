@@ -22,6 +22,10 @@ class KWTime(BaseModel):
     calendar_week: int
     total_time: float
 
+class DOYTime(BaseModel):
+    year: int
+    day_of_year: int
+    total_time: float
 
 class Time(SQLModel, table=True):
     __tablename__ = "tbltime"
