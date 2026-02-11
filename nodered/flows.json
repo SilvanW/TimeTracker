@@ -1452,7 +1452,7 @@
         "type": "function",
         "z": "5a58fcd80e44db05",
         "name": "function 6",
-        "func": "msg.url = \"http://backend:80/time\"\n\nlet grouping = flow.get(\"grouping\")\n\n// Group by Calendar week\nif (grouping == 0) {\n    msg.url = \"http://backend:80/time/calendar_week\"\n}\n\nmsg.payload = flow.get(\"filter\")\nreturn msg;",
+        "func": "msg.url = \"http://backend:80/time\"\n\nlet grouping = flow.get(\"grouping\")\n\n// Group by Calendar week\nif (grouping == 0) {\n    msg.url = \"http://backend:80/time/calendar_week\"\n} else if (grouping == 1) {\n    msg.url = \"http://backend:80/time/day_of_year\"\n}\n\nmsg.payload = flow.get(\"filter\")\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1712,7 +1712,7 @@
         "type": "function",
         "z": "5a58fcd80e44db05",
         "name": "Check Working Time",
-        "func": "const inp = msg.payload\nconst ExpectedWeeklyWorktime = 43;\nlet grouping = flow.get(\"grouping\")\n\n// Group by calendarweek\nif (grouping == 0) {\n    for (let group of inp) {\n        node.warn(group)\n        if (group.total_time >= ExpectedWeeklyWorktime) {\n            group[\"target_reached\"] = \"Yes\"\n        } else {\n            group[\"target_reached\"] = \"No\"\n        }\n    }\n}\n\nreturn msg;",
+        "func": "const inp = msg.payload\nconst ExpectedWeeklyWorktime = 43.0;\nconst ExpectedDayilyWorktime = ExpectedWeeklyWorktime/5.0;\nlet grouping = flow.get(\"grouping\")\n\n// Group by calendarweek\nif (grouping == 0) {\n    for (let group of inp) {\n        if (group.total_time >= ExpectedWeeklyWorktime) {\n            group[\"target_reached\"] = \"Yes\"\n        } else {\n            group[\"target_reached\"] = \"No\"\n        }\n    }\n} else if (grouping == 1) {\n    for (let group of inp) {\n        if (group.total_time >= ExpectedDayilyWorktime) {\n            group[\"target_reached\"] = \"Yes\"\n        } else {\n            group[\"target_reached\"] = \"No\"\n        }\n    }\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2783,7 +2783,7 @@
         ]
     },
     {
-        "id": "bf542087ae630c76",
+        "id": "18971ef863303b33",
         "type": "global-config",
         "env": [],
         "modules": {
