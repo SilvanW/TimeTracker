@@ -9,7 +9,7 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 
 @router.get("/")
 def read_projects(session: SessionDep) -> list:
-    projects = session.exec(select(Project)).all()
+    projects = session.exec(select(Project).order_by(Project.id)).all()
     return projects
 
 
