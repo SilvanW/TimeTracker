@@ -1324,7 +1324,7 @@
         "type": "function",
         "z": "ab09c729ddbc5d2b",
         "name": "function 5",
-        "func": "const inp = msg.payload;\n\nif (!(\"kw\" in inp)) {\n    return null;\n}\n\nmsg.url = `http://host.docker.internal:8000/time/project?calendar_week=${inp.kw}`\n\nreturn msg;",
+        "func": "const inp = msg.payload;\n\nif (!(\"kw\" in inp)) {\n    return null;\n}\n\nmsg.url = `http://backend:80/time/project?calendar_week=${inp.kw}`\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1406,6 +1406,22 @@
         "wires": []
     },
     {
+        "id": "de858ee35ee7f28b",
+        "type": "link in",
+        "z": "ab09c729ddbc5d2b",
+        "name": "KW Overview",
+        "links": [
+            "320434b8e2855cca"
+        ],
+        "x": 1195,
+        "y": 160,
+        "wires": [
+            [
+                "0f4a65295751512a"
+            ]
+        ]
+    },
+    {
         "id": "79732774238bebc1",
         "type": "ui_table",
         "z": "5a58fcd80e44db05",
@@ -1420,7 +1436,9 @@
         "x": 1060,
         "y": 120,
         "wires": [
-            []
+            [
+                "22944997acd13992"
+            ]
         ]
     },
     {
@@ -1724,6 +1742,46 @@
         "wires": [
             [
                 "79732774238bebc1"
+            ]
+        ]
+    },
+    {
+        "id": "320434b8e2855cca",
+        "type": "link out",
+        "z": "5a58fcd80e44db05",
+        "name": "link out 1",
+        "mode": "link",
+        "links": [
+            "de858ee35ee7f28b"
+        ],
+        "x": 1485,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "22944997acd13992",
+        "type": "change",
+        "z": "5a58fcd80e44db05",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.kw",
+                "pt": "msg",
+                "to": "payload.calendar_week",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1320,
+        "y": 120,
+        "wires": [
+            [
+                "320434b8e2855cca"
             ]
         ]
     },
@@ -2783,7 +2841,7 @@
         ]
     },
     {
-        "id": "18971ef863303b33",
+        "id": "1acd57feef105842",
         "type": "global-config",
         "env": [],
         "modules": {
