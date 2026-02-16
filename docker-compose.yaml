@@ -27,7 +27,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:80"
+      - "8010:80"
     environment:
       - PORT=80
       - POSTGRES_URL
