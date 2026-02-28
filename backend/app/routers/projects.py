@@ -1,8 +1,11 @@
+from typing import Optional
+
 from fastapi import APIRouter
 from sqlmodel import select
 
 from app.database.db import SessionDep
 from app.database.project import CreateProject, Project
+from app.database.project_time import CreateProjectTime, ProjectTime
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -50,3 +53,31 @@ def delete_project(project_id: int, session: SessionDep) -> dict:
     session.delete(project)
     session.commit()
     return {"message": "Project deleted successfully"}
+
+
+# Project Time
+@router.get("/{project_id}/time")
+def get_project_time(
+    project_id: int, session: SessionDep, year: Optional[int] = None
+) -> list[ProjectTime]:
+    query = select(ProjectTime).where(ProjectTime.project_id == project_id)
+
+    if year is not None:
+        query = query.where(ProjectTime.year == year)
+
+    query.order_by(ProjectTime.year.desc())
+
+    result = session.exec(query).all()
+    return result
+
+
+@router.post("/{project_id}/time")
+def create_project_time(
+    project_id: int, project_time: CreateProjectTime, session: SessionDep
+) -> ProjectTime:
+    db_project_time = ProjectTime(project_id=project_id, **project_time.model_dump())
+    db_project_time.project_id = project_id
+    session.add(db_project_time)
+    session.commit()
+    session.refresh(db_project_time)
+    return db_project_time

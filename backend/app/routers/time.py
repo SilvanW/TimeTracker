@@ -73,7 +73,7 @@ def get_time_by_day_of_year(
 
 @router.get("/project")
 def read_time_by_project(
-    session: SessionDep, calendar_week: Optional[int] = None
+    session: SessionDep, calendar_week: Optional[int] = None, year: Optional[int] = None
 ) -> list[ProjectTime]:
     query = (
         select(
@@ -88,6 +88,9 @@ def read_time_by_project(
 
     if calendar_week is not None:
         query = query.where(func.extract("week", Time.start) == calendar_week)
+
+    if year is not None:
+        query = query.where(func.extract("year", Time.start) == year)
 
     time = session.exec(query).all()
     return time
