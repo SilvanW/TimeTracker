@@ -23,9 +23,25 @@
         "info": ""
     },
     {
+        "id": "d7d43b2f25cf9da8",
+        "type": "tab",
+        "label": "Project",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "44cdabf9d1588c75",
         "type": "tab",
         "label": "Agent",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "812de51cdad92159",
+        "type": "tab",
+        "label": "Environment",
         "disabled": false,
         "info": "",
         "env": []
@@ -38,7 +54,7 @@
         "y": 100,
         "wires": [
             [
-                "5d6f05ef90c17f6d"
+                "53436cb2d33653dc"
             ]
         ]
     },
@@ -269,6 +285,28 @@
         "name": "Calendar Week",
         "tab": "6311d57cd4e85433",
         "order": 5,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "dc09aab5c36c08ef",
+        "type": "ui_group",
+        "name": "Project",
+        "tab": "523d5ae69d4d2967",
+        "order": 3,
+        "disp": true,
+        "width": 8,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "b6f2a320608a6657",
+        "type": "ui_group",
+        "name": "New Project Budget",
+        "tab": "523d5ae69d4d2967",
+        "order": 4,
         "disp": true,
         "width": 6,
         "collapse": false,
@@ -1008,7 +1046,7 @@
         "sendOnBlur": true,
         "className": "",
         "topicType": "msg",
-        "x": 380,
+        "x": 680,
         "y": 1160,
         "wires": [
             [
@@ -1035,7 +1073,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 670,
+        "x": 970,
         "y": 1160,
         "wires": [
             [
@@ -1422,6 +1460,55 @@
         ]
     },
     {
+        "id": "7aa846e7a8496e18",
+        "type": "inject",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 1160,
+        "wires": [
+            [
+                "8899576535a9ccf7"
+            ]
+        ]
+    },
+    {
+        "id": "8899576535a9ccf7",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "Reset Input",
+        "func": "msg.payload = new Date().getWeek()\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 1160,
+        "wires": [
+            [
+                "f4fde1f6bcea4fd3"
+            ]
+        ]
+    },
+    {
         "id": "79732774238bebc1",
         "type": "ui_table",
         "z": "5a58fcd80e44db05",
@@ -1665,7 +1752,7 @@
         "type": "function",
         "z": "5a58fcd80e44db05",
         "name": "Reset Input",
-        "func": "msg.payload = null\nreturn msg;",
+        "func": "msg.payload = new Date().getFullYear()\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -1816,11 +1903,11 @@
         "columns": [],
         "outputs": 1,
         "cts": true,
-        "x": 750,
+        "x": 890,
         "y": 100,
         "wires": [
             [
-                "078d5327d9b75a22"
+                "8c6f105f4c8d9791"
             ]
         ]
     },
@@ -1886,7 +1973,7 @@
         "z": "f6f2187d.f17ca8",
         "name": "",
         "group": "900443b7c5e5bf2a",
-        "order": 2,
+        "order": 3,
         "width": 6,
         "height": 1,
         "passthru": false,
@@ -1913,7 +2000,7 @@
         "type": "function",
         "z": "f6f2187d.f17ca8",
         "name": "Insert Project",
-        "func": "const project_name = flow.get(\"project_name\")\nconst project_number = flow.get(\"project_number\")\n\nmsg.payload = {\"name\":project_name,\"project_nr\":project_number}\n\nreturn msg;",
+        "func": "const backend_url = global.get(\"backend_url\")\nmsg.url = `${backend_url}/projects`\nconst project_name = flow.get(\"project_name\")\nconst project_number = flow.get(\"project_number\")\n\nmsg.payload = {\"name\":project_name,\"project_nr\":project_number}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2102,22 +2189,6 @@
         ]
     },
     {
-        "id": "078d5327d9b75a22",
-        "type": "debug",
-        "z": "f6f2187d.f17ca8",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 940,
-        "y": 100,
-        "wires": []
-    },
-    {
         "id": "5d6f05ef90c17f6d",
         "type": "http request",
         "z": "f6f2187d.f17ca8",
@@ -2125,7 +2196,7 @@
         "method": "GET",
         "ret": "obj",
         "paytoqs": "ignore",
-        "url": "http://backend:80/projects",
+        "url": "",
         "tls": "",
         "persist": false,
         "proxy": "",
@@ -2133,7 +2204,7 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 530,
+        "x": 710,
         "y": 100,
         "wires": [
             [
@@ -2149,7 +2220,7 @@
         "method": "POST",
         "ret": "obj",
         "paytoqs": "ignore",
-        "url": "http://backend:80/projects",
+        "url": "",
         "tls": "",
         "persist": false,
         "proxy": "",
@@ -2296,7 +2367,7 @@
         "label": "Project Number",
         "tooltip": "The name of the project",
         "group": "900443b7c5e5bf2a",
-        "order": 1,
+        "order": 2,
         "width": 6,
         "height": 1,
         "passthru": true,
@@ -2335,6 +2406,822 @@
         "reg": false,
         "x": 780,
         "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8c6f105f4c8d9791",
+        "type": "link out",
+        "z": "f6f2187d.f17ca8",
+        "name": "Selected Project",
+        "mode": "link",
+        "links": [
+            "2f57eab3467614b7"
+        ],
+        "x": 1015,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "53436cb2d33653dc",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "function 8",
+        "func": "const backend_url = global.get(\"backend_url\")\nmsg.url = `${backend_url}/projects`\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 100,
+        "wires": [
+            [
+                "5d6f05ef90c17f6d"
+            ]
+        ]
+    },
+    {
+        "id": "2f57eab3467614b7",
+        "type": "link in",
+        "z": "d7d43b2f25cf9da8",
+        "name": "link in 3",
+        "links": [
+            "8c6f105f4c8d9791"
+        ],
+        "x": 175,
+        "y": 80,
+        "wires": [
+            [
+                "48634067021910a2",
+                "89337cedfb15232d",
+                "2432e806d78dbc82",
+                "cea6aa336bf69d93",
+                "a37febaaea7e7b85"
+            ]
+        ]
+    },
+    {
+        "id": "48634067021910a2",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.name",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 100,
+        "wires": [
+            [
+                "d2c197105ad3abf1"
+            ]
+        ]
+    },
+    {
+        "id": "d2c197105ad3abf1",
+        "type": "ui_text_input",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "label": "Project Name",
+        "tooltip": "The name of the Project selected",
+        "group": "dc09aab5c36c08ef",
+        "order": 1,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 620,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5799a386c3793743",
+        "type": "ui_text_input",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "label": "Project Number",
+        "tooltip": "The number of the Project selected",
+        "group": "dc09aab5c36c08ef",
+        "order": 2,
+        "width": 8,
+        "height": 1,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 620,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "89337cedfb15232d",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.project_nr",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 160,
+        "wires": [
+            [
+                "5799a386c3793743"
+            ]
+        ]
+    },
+    {
+        "id": "2432e806d78dbc82",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"show\":[\"Settings_Project\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 360,
+        "wires": [
+            [
+                "70d4408f89f2979b"
+            ]
+        ]
+    },
+    {
+        "id": "70d4408f89f2979b",
+        "type": "ui_ui_control",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "events": "all",
+        "x": 600,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9a5520d7632bb821",
+        "type": "inject",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 420,
+        "wires": [
+            [
+                "15d2590ea8b8509b",
+                "477f0afe1e03ac6b"
+            ]
+        ]
+    },
+    {
+        "id": "15d2590ea8b8509b",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"hide\":[\"Settings_Project\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 420,
+        "wires": [
+            [
+                "70d4408f89f2979b"
+            ]
+        ]
+    },
+    {
+        "id": "5bb43194218d1519",
+        "type": "ui_button",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "group": "dc09aab5c36c08ef",
+        "order": 4,
+        "width": 8,
+        "height": 1,
+        "passthru": false,
+        "label": "Add Project Budget",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-plus",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 150,
+        "y": 520,
+        "wires": [
+            [
+                "59ed3d49708faaa5",
+                "b661205ac1520d93",
+                "01453d0c8966ca6f",
+                "629282dd019b1787",
+                "cb0a36ebce176063"
+            ]
+        ]
+    },
+    {
+        "id": "59ed3d49708faaa5",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"show\":[\"Settings_New_Project_Budget\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 410,
+        "y": 520,
+        "wires": [
+            [
+                "eacb201c0195feea"
+            ]
+        ]
+    },
+    {
+        "id": "eacb201c0195feea",
+        "type": "ui_ui_control",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "events": "all",
+        "x": 640,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "477f0afe1e03ac6b",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"group\":{\"hide\":[\"Settings_New_Project_Budget\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 460,
+        "wires": [
+            [
+                "eacb201c0195feea"
+            ]
+        ]
+    },
+    {
+        "id": "cc4cfae29f78574f",
+        "type": "ui_text_input",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "label": "Year",
+        "tooltip": "The year the project budget is for",
+        "group": "b6f2a320608a6657",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 370,
+        "y": 700,
+        "wires": [
+            [
+                "64ddb6b45aec7d09"
+            ]
+        ]
+    },
+    {
+        "id": "b661205ac1520d93",
+        "type": "function",
+        "z": "d7d43b2f25cf9da8",
+        "name": "function 9",
+        "func": "const current_year = new Date().getFullYear()\nmsg.payload = current_year\nflow.set(\"new_project_budget.year\", current_year)\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 180,
+        "y": 700,
+        "wires": [
+            [
+                "cc4cfae29f78574f"
+            ]
+        ]
+    },
+    {
+        "id": "eef4afe7fa7c8657",
+        "type": "ui_text_input",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "label": "Time Budget [h]",
+        "tooltip": "The project time budget in hours",
+        "group": "b6f2a320608a6657",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 440,
+        "y": 760,
+        "wires": [
+            [
+                "8167a08aa20b0792"
+            ]
+        ]
+    },
+    {
+        "id": "01453d0c8966ca6f",
+        "type": "function",
+        "z": "d7d43b2f25cf9da8",
+        "name": "function 10",
+        "func": "msg.payload = null\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 190,
+        "y": 760,
+        "wires": [
+            [
+                "eef4afe7fa7c8657"
+            ]
+        ]
+    },
+    {
+        "id": "355df2efa397caf8",
+        "type": "function",
+        "z": "d7d43b2f25cf9da8",
+        "name": "Insert Project",
+        "func": "const backend_url = global.get(\"backend_url\")\nconst project_id = flow.get(\"current_project\").id\n\nmsg.url = `${backend_url}/projects/${project_id}/budget`\n\nconst year = flow.get(\"new_project_budget.year\")\nconst time_budget_hours = flow.get(\"new_project_budget.time_budget_hours\")\nconst budget_source = flow.get(\"new_project_budget.budget_source\")\n\nmsg.payload = { \"year\": year, \"time_budget_hours\": time_budget_hours, \"budget_source\": budget_source}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 880,
+        "wires": [
+            [
+                "9db1c9b0aab2f289"
+            ]
+        ]
+    },
+    {
+        "id": "3f2b28f9891b2723",
+        "type": "ui_button",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "group": "b6f2a320608a6657",
+        "order": 4,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "label": "Save Project Budget",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-check",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 220,
+        "y": 880,
+        "wires": [
+            [
+                "355df2efa397caf8"
+            ]
+        ]
+    },
+    {
+        "id": "cea6aa336bf69d93",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "current_project",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 390,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "84bf364111eb7d2b",
+        "type": "ui_text",
+        "z": "d7d43b2f25cf9da8",
+        "group": "b6f2a320608a6657",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "name": "",
+        "label": "Project Name",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 460,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "629282dd019b1787",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "current_project.name",
+                "tot": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 210,
+        "y": 640,
+        "wires": [
+            [
+                "84bf364111eb7d2b"
+            ]
+        ]
+    },
+    {
+        "id": "64ddb6b45aec7d09",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "new_project_budget.year",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 640,
+        "y": 700,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8167a08aa20b0792",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "new_project_budget.time_budget_hours",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 790,
+        "y": 760,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9db1c9b0aab2f289",
+        "type": "http request",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 690,
+        "y": 880,
+        "wires": [
+            [
+                "329d3a50981110d5",
+                "a37febaaea7e7b85",
+                "477f0afe1e03ac6b"
+            ]
+        ]
+    },
+    {
+        "id": "329d3a50981110d5",
+        "type": "debug",
+        "z": "d7d43b2f25cf9da8",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "ecb3b306780ca589",
+        "type": "ui_table",
+        "z": "d7d43b2f25cf9da8",
+        "group": "dc09aab5c36c08ef",
+        "name": "Project Budget",
+        "order": 3,
+        "width": 8,
+        "height": 4,
+        "columns": [
+            {
+                "field": "year",
+                "title": "Year",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "time_budget_hours",
+                "title": "Time Budget [h]",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "budget_source",
+                "title": "Budget Source",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            }
+        ],
+        "outputs": 0,
+        "cts": false,
+        "x": 840,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "a37febaaea7e7b85",
+        "type": "function",
+        "z": "d7d43b2f25cf9da8",
+        "name": "function 11",
+        "func": "const backend_url = global.get(\"backend_url\")\nconst inp = msg.payload;\n\nmsg.url = `${backend_url}/projects/${inp.id}/budget`\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 220,
+        "wires": [
+            [
+                "d3eb70e9c48fa548"
+            ]
+        ]
+    },
+    {
+        "id": "d3eb70e9c48fa548",
+        "type": "http request",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 610,
+        "y": 220,
+        "wires": [
+            [
+                "ecb3b306780ca589"
+            ]
+        ]
+    },
+    {
+        "id": "cb0a36ebce176063",
+        "type": "function",
+        "z": "d7d43b2f25cf9da8",
+        "name": "function 7",
+        "func": "msg.payload = null\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 180,
+        "y": 820,
+        "wires": [
+            [
+                "cdccefa5d274adca"
+            ]
+        ]
+    },
+    {
+        "id": "cdccefa5d274adca",
+        "type": "ui_text_input",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "label": "Budget Source",
+        "tooltip": "The project time budget in hours",
+        "group": "b6f2a320608a6657",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 430,
+        "y": 820,
+        "wires": [
+            [
+                "7ddfa108f8840d85"
+            ]
+        ]
+    },
+    {
+        "id": "7ddfa108f8840d85",
+        "type": "change",
+        "z": "d7d43b2f25cf9da8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "new_project_budget.budget_source",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 780,
+        "y": 820,
         "wires": [
             []
         ]
@@ -2841,7 +3728,61 @@
         ]
     },
     {
-        "id": "1acd57feef105842",
+        "id": "cec6a71f163a1523",
+        "type": "change",
+        "z": "812de51cdad92159",
+        "name": "Backend URL",
+        "rules": [
+            {
+                "t": "set",
+                "p": "backend_url",
+                "pt": "global",
+                "to": "http://host.docker.internal:8000",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "558696b256095739",
+        "type": "inject",
+        "z": "812de51cdad92159",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 120,
+        "wires": [
+            [
+                "cec6a71f163a1523"
+            ]
+        ]
+    },
+    {
+        "id": "0b9f17e93aca430f",
         "type": "global-config",
         "env": [],
         "modules": {

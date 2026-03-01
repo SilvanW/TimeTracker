@@ -22,11 +22,12 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.create_table(
-        "tblprojecttime",
+        "tblprojectbudget",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
         sa.Column("year", sa.Integer(), nullable=False),
         sa.Column("time_budget_hours", sa.Integer(), nullable=False),
+        sa.Column("budget_source", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
             ["project_id"], ["tblprojects.id"], ondelete="RESTRICT"
         ),
@@ -37,4 +38,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_table("tblprojecttime")
+    op.drop_table("tblprojectbudget")
