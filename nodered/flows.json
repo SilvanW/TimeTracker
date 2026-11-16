@@ -796,7 +796,7 @@
         "z": "ab09c729ddbc5d2b",
         "name": "",
         "group": "e27c2ac7935009d8",
-        "order": 5,
+        "order": 6,
         "width": 8,
         "height": 1,
         "passthru": false,
@@ -811,11 +811,12 @@
         "topic": "topic",
         "topicType": "msg",
         "x": 140,
-        "y": 80,
+        "y": 100,
         "wires": [
             [
                 "c8936184f999a438",
-                "b817e6d382a7b15a"
+                "b817e6d382a7b15a",
+                "e7f2097253184846"
             ]
         ]
     },
@@ -830,7 +831,7 @@
         "rowsPerMsg": 1,
         "outputs": 1,
         "x": 610,
-        "y": 80,
+        "y": 100,
         "wires": [
             [
                 "3793a5d927c15ee5"
@@ -843,14 +844,14 @@
         "z": "ab09c729ddbc5d2b",
         "group": "e27c2ac7935009d8",
         "name": "Overview",
-        "order": 3,
+        "order": 4,
         "width": 8,
         "height": 6,
         "columns": [],
         "outputs": 1,
         "cts": true,
         "x": 1040,
-        "y": 80,
+        "y": 100,
         "wires": [
             [
                 "0f4a65295751512a"
@@ -984,7 +985,8 @@
         "wires": [
             [
                 "47e920b05b0452a3",
-                "c8936184f999a438"
+                "c8936184f999a438",
+                "e7f2097253184846"
             ]
         ]
     },
@@ -1021,7 +1023,7 @@
         "finalize": "",
         "libs": [],
         "x": 830,
-        "y": 80,
+        "y": 100,
         "wires": [
             [
                 "f11e92424e01bdf2"
@@ -1114,7 +1116,7 @@
         "finalize": "",
         "libs": [],
         "x": 370,
-        "y": 80,
+        "y": 100,
         "wires": [
             [
                 "d31b2b09a48d9236"
@@ -1151,7 +1153,7 @@
         "tooltip": "Grouping to use",
         "place": "Select option",
         "group": "e27c2ac7935009d8",
-        "order": 2,
+        "order": 3,
         "width": 8,
         "height": 1,
         "passthru": true,
@@ -1370,7 +1372,7 @@
         "finalize": "",
         "libs": [],
         "x": 1240,
-        "y": 80,
+        "y": 100,
         "wires": [
             [
                 "f622be2eb401768e"
@@ -1509,12 +1511,131 @@
         ]
     },
     {
+        "id": "e7f2097253184846",
+        "type": "function",
+        "z": "ab09c729ddbc5d2b",
+        "name": "yearlyHours",
+        "func": "const year = msg.payload\n\nmsg.query = `\nselect sum(extract(epoch from (\"end\" - \"start\")) / 3600) as \"total_hours\"\nfrom tbltime\nwhere extract(year from \"start\") = ${year};\n`\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 40,
+        "wires": [
+            [
+                "1728f7c5decfab5c"
+            ]
+        ]
+    },
+    {
+        "id": "1728f7c5decfab5c",
+        "type": "postgresql",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "query": "",
+        "postgreSQLConfig": "58df7d171bfac989",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 610,
+        "y": 40,
+        "wires": [
+            [
+                "4ba8a69581386cc0"
+            ]
+        ]
+    },
+    {
+        "id": "d01eac56091b8170",
+        "type": "ui_text",
+        "z": "ab09c729ddbc5d2b",
+        "group": "e27c2ac7935009d8",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Yearly Hours",
+        "format": "{{msg.payload | number:2}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1070,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "4ba8a69581386cc0",
+        "type": "change",
+        "z": "ab09c729ddbc5d2b",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload[0].total_hours",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 850,
+        "y": 40,
+        "wires": [
+            [
+                "d01eac56091b8170"
+            ]
+        ]
+    },
+    {
+        "id": "904768735d7555fe",
+        "type": "link in",
+        "z": "ab09c729ddbc5d2b",
+        "name": "link in 4",
+        "links": [
+            "cb3739e0e8c71af0"
+        ],
+        "x": 185,
+        "y": 240,
+        "wires": [
+            [
+                "e7f2097253184846",
+                "664f73f774c37a9a"
+            ]
+        ]
+    },
+    {
+        "id": "664f73f774c37a9a",
+        "type": "debug",
+        "z": "ab09c729ddbc5d2b",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 260,
+        "wires": []
+    },
+    {
         "id": "79732774238bebc1",
         "type": "ui_table",
         "z": "5a58fcd80e44db05",
         "group": "e27c2ac7935009d8",
         "name": "Overview New",
-        "order": 4,
+        "order": 5,
         "width": 8,
         "height": 6,
         "columns": [],
@@ -1621,7 +1742,8 @@
         "y": 220,
         "wires": [
             [
-                "6f111b31a6840ab7"
+                "6f111b31a6840ab7",
+                "cb3739e0e8c71af0"
             ]
         ]
     },
@@ -1989,6 +2111,19 @@
                 "6b2bec06fde3994e"
             ]
         ]
+    },
+    {
+        "id": "cb3739e0e8c71af0",
+        "type": "link out",
+        "z": "5a58fcd80e44db05",
+        "name": "selectedYear",
+        "mode": "link",
+        "links": [
+            "904768735d7555fe"
+        ],
+        "x": 745,
+        "y": 220,
+        "wires": []
     },
     {
         "id": "dee22348bf8df201",
@@ -3900,7 +4035,7 @@
         ]
     },
     {
-        "id": "2d872f9a7bdc2f0d",
+        "id": "10066a5bf561c0f7",
         "type": "global-config",
         "env": [],
         "modules": {
