@@ -1,8 +1,8 @@
 type NumericProps = {
-  value: number | "";
+  value: number;
   label: string;
   min?: number;
-  onChange: (value: number | "") => void;
+  onChange: (value: number) => void;
 };
 
 export function Numeric({ value, label, min, onChange }: NumericProps) {

@@ -196,7 +196,7 @@ export function CalendarWeekTable({
             onChange={(e) => {
               const val = e.target.value;
               if (val === "" || (/^\d+$/.test(val) && Number(val) >= 0)) {
-                onChange(Number(val));
+                onYearChange(Number(val));
               }
             }}
             onKeyDown={(e) => {
