@@ -35,24 +35,30 @@ const columns = [
 
 type DetailProps = {
   year: number;
+  calendarWeek: number;
   onChange: (value: number) => void;
+  onCalendarWeekChange: (value: number) => void;
 };
 
-export function Detail({ year, onChange }: DetailProps) {
+export function Detail({
+  year,
+  calendarWeek,
+  onChange,
+  onCalendarWeekChange,
+}: DetailProps) {
   const [data, setData] = useState(() => [...defaultData]);
-  const [calendar_week, setCalendarWeek] = useState<number>(8);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setError(null);
     apiFetch<ProjectTime[]>(
-      `/time/project?calendar_week=${calendar_week}&year=${year}`,
+      `/time/project?calendar_week=${calendarWeek}&year=${year}`,
     )
       .then((json) => setData(json))
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to fetch data"),
       );
-  }, [calendar_week, year]);
+  }, [calendarWeek, year]);
 
   const table = useReactTable({
     data,
@@ -65,10 +71,10 @@ export function Detail({ year, onChange }: DetailProps) {
       <div className="flex items-center gap-2">
         <Numeric value={year} label="Year" onChange={onChange} />
         <Numeric
-          value={calendar_week}
+          value={calendarWeek}
           label="Calendar Week"
           min={1}
-          onChange={setCalendarWeek}
+          onChange={onCalendarWeekChange}
         />
       </div>
 

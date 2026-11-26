@@ -145,9 +145,11 @@ export function CalendarWeekTable({
   });
 
   const handleRowClick = (row: any) => {
-    onYearChange(row.year);
+    // row is a TanStack Row model — the actual data lives on row.original
+    const original = row.original;
+    onYearChange(original.year);
     if (view === "calendar_week" && onCalendarWeekChange) {
-      onCalendarWeekChange(row.calendar_week);
+      onCalendarWeekChange(original.calendar_week);
     }
   };
 

@@ -29,7 +29,12 @@ export default function Home() {
             />
           </section>
           <section className="w-full max-w-2xl">
-            <Detail year={year} onChange={setYear} />
+            <Detail
+              year={year}
+              calendarWeek={calendarWeek}
+              onChange={setYear}
+              onCalendarWeekChange={setCalendarWeek}
+            />
           </section>
         </main>
       </div>
