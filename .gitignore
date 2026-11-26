@@ -1,6 +1,7 @@
 # Files
 .env
 *.db
+.DS_Store
 
 # Folders
 .db_backup/

@@ -7,6 +7,7 @@ import {
   ColumnDef,
   SortingState,
 } from "@tanstack/react-table";
+import { apiFetch } from "./lib/api";
 
 type CalendarWeekProps = {
   year: number;
@@ -37,22 +38,16 @@ export function CalendarWeekTable({
   useEffect(() => {
     setLoading(true);
     setError(null);
-    let url =
-      view === "calendar_week"
-        ? "https://localhost/api/time/calendar_week"
-        : "https://localhost/api/time/day_of_year";
-    if (debouncedYear > 0) {
-      url += `?year=${debouncedYear}`;
-    }
-    console.log(`Fetching data from: ${url}`);
-    fetch(url)
-      .then((res) => res.json())
+    const path =
+      view === "calendar_week" ? "/time/calendar_week" : "/time/day_of_year";
+    const url = debouncedYear > 0 ? `${path}?year=${debouncedYear}` : path;
+    apiFetch<any[]>(url)
       .then((json) => {
         setData(json);
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to fetch data");
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to fetch data");
         setLoading(false);
       });
   }, [view, debouncedYear]);
@@ -151,7 +146,9 @@ export function CalendarWeekTable({
 
   const handleRowClick = (row: any) => {
     onYearChange(row.year);
-    onCalendarWeekChange(row.calendar_week);
+    if (view === "calendar_week" && onCalendarWeekChange) {
+      onCalendarWeekChange(row.calendar_week);
+    }
   };
 
   if (loading) return <div>Loading...</div>;
