@@ -3,9 +3,23 @@ import { CalendarWeekTable } from "./overview";
 import { Detail } from "./detail";
 import { useEffect, useState } from "react";
 
+// ISO-8601 calendar week of a date — the same value the backend's
+// PostgreSQL EXTRACT(WEEK FROM ...) produces.
+function calendarWeekOf(date: Date): number {
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
+  const dayNum = d.getUTCDay() || 7; // ISO weeks start on Monday; Sunday = 7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum); // shift to the Thursday of this ISO week
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
 export default function Home() {
   const [year, setYear] = useState<number>(2026);
-  const [calendarWeek, setCalendarWeek] = useState<number>(8);
+  const [calendarWeek, setCalendarWeek] = useState<number>(() =>
+    calendarWeekOf(new Date()),
+  );
 
   useEffect(() => {
     console.log(year);
