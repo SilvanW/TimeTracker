@@ -83,30 +83,9 @@ export function CalendarWeekTable({
       } as ColumnDef<any>;
     });
 
-    // Add Target Reached column after total_time (or at end if not found)
+    // Add Difference column after total_time (or at end if not found)
     const totalTimeIdx = keys.indexOf("total_time");
     const insertIdx = totalTimeIdx >= 0 ? totalTimeIdx + 1 : baseColumns.length;
-
-    const targetReachedCol: ColumnDef<any> = {
-      id: "target_reached",
-      accessorFn: (row: any) => Number(row?.total_time) >= WEEKLY_TARGET,
-      header: "Target Reached",
-      cell: (info: any) => {
-        const row = info.row.original;
-        const value = Number(row?.total_time);
-        const target = WEEKLY_TARGET;
-        const reached = value >= target;
-        return (
-          <span
-            className={`px-3 py-1 rounded font-semibold text-white ${
-              reached ? "bg-green-500" : "bg-red-500"
-            }`}
-          >
-            {reached ? "Yes" : "No"}
-          </span>
-        );
-      },
-    };
 
     const diffCol: ColumnDef<any> = {
       id: "time_diff",
@@ -120,7 +99,9 @@ export function CalendarWeekTable({
         const positive = diff >= 0;
         return (
           <span
-            className={`font-semibold ${positive ? "text-green-500" : "text-red-500"}`}
+            className={`px-3 py-1 rounded font-semibold text-white ${
+              positive ? "bg-green-500" : "bg-red-500"
+            }`}
           >
             {positive ? "+" : ""}
             {diff.toFixed(2)}
@@ -130,7 +111,7 @@ export function CalendarWeekTable({
     };
 
     const cols = [...baseColumns];
-    cols.splice(insertIdx, 0, targetReachedCol, diffCol);
+    cols.splice(insertIdx, 0, diffCol);
     return cols;
   }, [data]);
 

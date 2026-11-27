@@ -40,24 +40,6 @@ const columns = [
     },
   }),
   columnHelper.accessor("total_time", {
-    id: "target_reached",
-    header: () => "Target Reached",
-    cell: (info) => {
-      const row = info.row.original;
-      const value = Number(row.total_time);
-      const reached = value >= DAILY_TARGET;
-      return (
-        <span
-          className={`px-3 py-1 rounded font-semibold text-white ${
-            reached ? "bg-green-500" : "bg-red-500"
-          }`}
-        >
-          {reached ? "Yes" : "No"}
-        </span>
-      );
-    },
-  }),
-  columnHelper.accessor("total_time", {
     id: "time_diff",
     header: () => "Difference",
     cell: (info) => {
@@ -67,8 +49,8 @@ const columns = [
       const positive = diff >= 0;
       return (
         <span
-          className={`font-semibold ${
-            positive ? "text-green-500" : "text-red-500"
+          className={`px-3 py-1 rounded font-semibold text-white ${
+            positive ? "bg-green-500" : "bg-red-500"
           }`}
         >
           {positive ? "+" : ""}
