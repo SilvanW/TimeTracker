@@ -8,10 +8,12 @@ export function Modal({
   title,
   onClose,
   children,
+  wide = false,
 }: {
   title: string;
   onClose: () => void;
   children?: ReactNode;
+  wide?: boolean;
 }) {
   return (
     <div
@@ -19,7 +21,7 @@ export function Modal({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-6 shadow-lg"
+        className={`w-full ${wide ? "max-w-md" : "max-w-sm"} rounded-lg border border-zinc-200 bg-white p-6 shadow-lg`}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold text-zinc-800">{title}</h2>
