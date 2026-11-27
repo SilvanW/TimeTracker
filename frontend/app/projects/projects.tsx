@@ -19,7 +19,7 @@ import {
   type FormEvent,
 } from "react";
 import { apiFetch } from "../lib/api";
-import { YearFilter } from "../components/input";
+import { ProjectFilter, YearFilter } from "../components/input";
 import { SortableHeader } from "../components/sortable-header";
 import { Modal } from "../components/modal";
 import { ConfirmDialog } from "../components/confirm-dialog";
@@ -65,6 +65,7 @@ const budgetColumnHelper = createColumnHelper<BudgetRow>();
 export function Projects() {
   const searchParams = useSearchParams();
   const [nameFilter, setNameFilter] = useState<string>("");
+  const [budgetFilter, setBudgetFilter] = useState<string>("");
   const [year, setYear] = useState<number>(0);
   const [debouncedYear, setDebouncedYear] = useState<number>(0);
   const [data, setData] = useState<ProjectTime[]>([]);
@@ -157,12 +158,18 @@ export function Projects() {
           null,
         header: () => "Budget",
         cell: (info) => {
-          const budget = budgetForScope(
-            budgets,
-            info.row.original.project_id,
-            year,
+          const row = info.row.original;
+          const budget = budgetForScope(budgets, row.project_id, year);
+          if (!budget) return "—";
+          return (
+            <button
+              type="button"
+              onClick={() => setBudgetFilter(row.project_name)}
+              className="rounded bg-blue-50 border border-blue-200 px-2 py-0.5 font-medium text-blue-700 transition hover:bg-blue-100"
+            >
+              {budget.time_budget_hours}
+            </button>
           );
-          return budget ? budget.time_budget_hours : "—";
         },
       },
       {
@@ -207,13 +214,21 @@ export function Projects() {
 
   const budgetRows = useMemo<BudgetRow[]>(
     () =>
-      budgets.map((budget) => ({
-        ...budget,
-        project_name:
-          projects.find((project) => project.id === budget.project_id)?.name ??
-          "Unknown project",
-      })),
-    [budgets, projects],
+      budgets
+        .map((budget) => ({
+          ...budget,
+          project_name:
+            projects.find((project) => project.id === budget.project_id)
+              ?.name ?? "Unknown project",
+        }))
+        .filter(
+          (row) =>
+            budgetFilter.trim() === "" ||
+            row.project_name
+              .toLowerCase()
+              .includes(budgetFilter.trim().toLowerCase()),
+        ),
+    [budgets, projects, budgetFilter],
   );
 
   const budgetColumns = useMemo(
@@ -326,31 +341,11 @@ export function Projects() {
   return (
     <main className="px-10 pt-3">
       <div className="mb-3 flex items-center gap-4">
-        <div className="flex items-center gap-4">
-          <label htmlFor="project-input" className="font-medium text-zinc-700">
-            Project:
-          </label>
-          <div className="relative">
-            <input
-              id="project-input"
-              type="text"
-              placeholder="(all)"
-              value={nameFilter}
-              onChange={(e) => setNameFilter(e.target.value)}
-              className="border border-zinc-300 rounded px-3 py-1 pr-8 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-48"
-            />
-            {nameFilter !== "" && (
-              <button
-                type="button"
-                onClick={() => setNameFilter("")}
-                aria-label="Clear project filter"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 transition hover:text-zinc-700"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
+        <ProjectFilter
+          label="Project:"
+          value={nameFilter}
+          onChange={setNameFilter}
+        />
         <YearFilter value={year} onChange={setYear} />
       </div>
       <div
@@ -409,8 +404,14 @@ export function Projects() {
           </table>
         )}
       </div>
-      <div className="mt-8 mb-3 flex items-center justify-between">
+      <div className="mt-8 mb-3 flex items-center gap-4">
         <h2 className="text-lg font-medium text-zinc-700">Budgets</h2>
+        <ProjectFilter
+          value={budgetFilter}
+          onChange={setBudgetFilter}
+          placeholder="(all projects)"
+        />
+        <div className="flex-1" />
         <button
           type="button"
           onClick={() => {
