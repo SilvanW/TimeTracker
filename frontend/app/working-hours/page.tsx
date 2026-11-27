@@ -113,7 +113,7 @@ export default function WorkingHoursPage() {
           type="button"
           onClick={() => setPendingDelete(info.row.original)}
           aria-label="Delete working hours"
-          className="text-zinc-400 transition hover:text-zinc-700"
+          className="rounded bg-red-50 border border-red-200 px-3 py-1 font-medium text-red-700 transition hover:bg-red-100"
         >
           ×
         </button>
