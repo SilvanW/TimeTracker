@@ -13,6 +13,7 @@ class CreateTime(BaseModel):
 
 
 class ProjectTime(BaseModel):
+    project_id: int
     project_name: str
     project_nr: Optional[int] = None
     total_time: float

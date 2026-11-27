@@ -110,6 +110,7 @@ def read_time_by_project(
 ) -> list[ProjectTime]:
     query = (
         select(
+            Project.id.label("project_id"),
             Project.name.label("project_name"),
             Project.project_nr,
             func.sum(func.extract("epoch", Time.end - Time.start) / 3600.0).label(
