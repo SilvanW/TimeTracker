@@ -1,8 +1,9 @@
 "use client";
 import { CalendarWeekTable } from "./overview";
+import { DayDetail } from "./day-detail";
 import { Detail } from "./detail";
 import { WeekDays } from "./daily";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // ISO-8601 calendar week of a date — the same value the backend's
 // PostgreSQL EXTRACT(WEEK FROM ...) produces.
@@ -21,6 +22,13 @@ export default function Home() {
   const [calendarWeek, setCalendarWeek] = useState<number>(() =>
     calendarWeekOf(new Date()),
   );
+  const [selectedDay, setSelectedDay] = useState<number>(0);
+
+  // A selected day only makes sense for the displayed week — drop it when
+  // the week or year changes.
+  useEffect(() => {
+    setSelectedDay(0);
+  }, [year, calendarWeek]);
 
   return (
     <main className="flex flex-row gap-8 px-8">
@@ -41,7 +49,13 @@ export default function Home() {
           </div>
         </div>
         <div className="flex flex-col gap-8">
-          <WeekDays year={year} calendarWeek={calendarWeek} />
+          <WeekDays
+            year={year}
+            calendarWeek={calendarWeek}
+            selectedDay={selectedDay}
+            onDaySelect={setSelectedDay}
+          />
+          {selectedDay > 0 && <DayDetail year={year} dayOfYear={selectedDay} />}
           <Detail year={year} calendarWeek={calendarWeek} />
         </div>
       </section>

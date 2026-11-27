@@ -30,6 +30,15 @@ class DOYTime(BaseModel):
     total_time: float
 
 
+class DayTimeEntry(BaseModel):
+    id: int
+    project_id: int
+    start: datetime
+    end: datetime
+    description: Optional[str] = None
+    total_time: float
+
+
 class Time(SQLModel, table=True):
     __tablename__ = "tbltime"
     id: Optional[int] = Field(default=None, primary_key=True)

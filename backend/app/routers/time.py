@@ -6,7 +6,14 @@ from sqlmodel import desc, func, select
 
 from app.database.db import SessionDep
 from app.database.project import Project
-from app.database.time import CreateTime, DOYTime, KWTime, ProjectTime, Time
+from app.database.time import (
+    CreateTime,
+    DayTimeEntry,
+    DOYTime,
+    KWTime,
+    ProjectTime,
+    Time,
+)
 
 router = APIRouter(prefix="/time", tags=["time"])
 
@@ -69,6 +76,29 @@ def get_time_by_day_of_year(
 
     if year is not None:
         query = query.where(func.extract("year", Time.start) == year)
+
+    time = session.exec(query).all()
+    return time
+
+
+@router.get("/day")
+def read_time_by_day(
+    session: SessionDep, year: Optional[int] = None, day_of_year: Optional[int] = None
+) -> list[DayTimeEntry]:
+    query = select(
+        Time.id,
+        Time.project_id,
+        Time.start,
+        Time.end,
+        Time.description,
+        (func.extract("epoch", Time.end - Time.start) / 3600.0).label("total_time"),
+    )
+
+    if year is not None:
+        query = query.where(func.extract("year", Time.start) == year)
+
+    if day_of_year is not None:
+        query = query.where(func.extract("doy", Time.start) == day_of_year)
 
     time = session.exec(query).all()
     return time

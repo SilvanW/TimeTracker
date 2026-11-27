@@ -21,15 +21,16 @@ type DayTime = {
 const WEEKLY_TARGET = 43;
 const DAILY_TARGET = WEEKLY_TARGET / 5;
 
-const columnHelper = createColumnHelper<{
-  day_of_year: number;
-  total_time: number;
-}>();
+const columnHelper = createColumnHelper<DayTime>();
 
 const columns = [
   columnHelper.accessor("day_of_year", {
-    header: () => "Day of Year",
-    cell: (info) => info.getValue(),
+    header: () => "Date",
+    cell: (info) => {
+      const row = info.row.original;
+      const date = new Date(Date.UTC(row.year, 0, row.day_of_year - 1));
+      return date.toISOString().slice(0, 10);
+    },
   }),
   columnHelper.accessor("total_time", {
     header: () => "Total Time",
@@ -103,9 +104,13 @@ function dayOfYearsOfIsoWeek(year: number, week: number): number[] {
 export function WeekDays({
   year,
   calendarWeek,
+  selectedDay,
+  onDaySelect,
 }: {
   year: number;
   calendarWeek: number;
+  selectedDay: number;
+  onDaySelect: (dayOfYear: number) => void;
 }) {
   const [data, setData] = useState<DayTime[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -197,9 +202,15 @@ export function WeekDays({
               {table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className={
-                    Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
-                  }
+                  className={`transition ${
+                    row.original.day_of_year === selectedDay
+                      ? "bg-blue-100"
+                      : Number(row.id) % 2 === 0
+                        ? "bg-white"
+                        : "bg-zinc-50"
+                  } hover:bg-blue-100/40`}
+                  onClick={() => onDaySelect(row.original.day_of_year)}
+                  style={{ cursor: "pointer" }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
