@@ -109,6 +109,39 @@ def create_project_budget(
     return db_project_budget
 
 
+@router.put("/{project_id}/budget/{budget_id}")
+def update_project_budget(
+    project_id: int,
+    budget_id: int,
+    project_budget: CreateProjectBudget,
+    session: SessionDep,
+) -> Any:
+    # Any: returns the budget, or an error dict (200 + {"error": ...}
+    # convention used across this API).
+    db_project_budget = session.get(ProjectBudget, budget_id)
+
+    if not db_project_budget or db_project_budget.project_id != project_id:
+        return {"error": "Project budget not found"}
+
+    existing = session.exec(
+        select(ProjectBudget).where(
+            ProjectBudget.project_id == project_id,
+            ProjectBudget.year == project_budget.year,
+            ProjectBudget.id != budget_id,
+        )
+    ).first()
+    if existing:
+        return {"error": "Budget already exists for this project and year"}
+
+    for key, value in project_budget.model_dump().items():
+        setattr(db_project_budget, key, value)
+
+    session.add(db_project_budget)
+    session.commit()
+    session.refresh(db_project_budget)
+    return db_project_budget
+
+
 @router.delete("/{project_id}/budget/{budget_id}")
 def delete_project_budget(project_id: int, budget_id: int, session: SessionDep) -> dict:
     db_project_budget = session.get(ProjectBudget, budget_id)

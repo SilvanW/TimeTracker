@@ -76,6 +76,9 @@ export function Projects() {
   const [budgetsLoading, setBudgetsLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const [showAddBudget, setShowAddBudget] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<ProjectBudget | null>(
+    null,
+  );
   const [pendingBudgetDelete, setPendingBudgetDelete] =
     useState<ProjectBudget | null>(null);
   const [budgetProjectId, setBudgetProjectId] = useState<string>("");
@@ -228,17 +231,27 @@ export function Projects() {
         cell: (info) => info.getValue(),
       }),
       budgetColumnHelper.display({
-        id: "delete",
+        id: "actions",
         header: () => "",
         cell: (info) => (
-          <button
-            type="button"
-            onClick={() => setPendingBudgetDelete(info.row.original)}
-            aria-label="Delete budget"
-            className="rounded bg-red-50 border border-red-200 px-3 py-1 font-medium text-red-700 transition hover:bg-red-100"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => openEditBudget(info.row.original)}
+              aria-label="Edit budget"
+              className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingBudgetDelete(info.row.original)}
+              aria-label="Delete budget"
+              className="rounded bg-red-50 border border-red-200 px-3 py-1 font-medium text-red-700 transition hover:bg-red-100"
+            >
+              ×
+            </button>
+          </div>
         ),
       }),
     ],
@@ -254,25 +267,48 @@ export function Projects() {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const closeBudgetModal = () => {
+    setBudgetProjectId("");
+    setBudgetHours("");
+    setBudgetYear("");
+    setEditingBudget(null);
+    setShowAddBudget(false);
+  };
+
+  const openEditBudget = (budget: ProjectBudget) => {
+    setEditingBudget(budget);
+    setBudgetProjectId(String(budget.project_id));
+    setBudgetHours(String(budget.time_budget_hours));
+    setBudgetYear(budget.year === null ? "" : String(budget.year));
+    setShowAddBudget(true);
+  };
+
   const handleSubmitBudget = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (budgetProjectId === "" || budgetHours === "") return;
     try {
-      await apiFetch<ProjectBudget>(`/projects/${budgetProjectId}/budget`, {
-        method: "POST",
+      const url =
+        editingBudget !== null
+          ? `/projects/${budgetProjectId}/budget/${editingBudget.id}`
+          : `/projects/${budgetProjectId}/budget`;
+      await apiFetch<ProjectBudget>(url, {
+        method: editingBudget !== null ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           year: budgetYear === "" ? null : Number(budgetYear),
           time_budget_hours: Number(budgetHours),
         }),
       });
-      setBudgetProjectId("");
-      setBudgetHours("");
-      setBudgetYear("");
-      setShowAddBudget(false);
+      closeBudgetModal();
       loadBudgets();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add budget");
+      setError(
+        err instanceof Error
+          ? err.message
+          : editingBudget !== null
+            ? "Failed to update budget"
+            : "Failed to add budget",
+      );
     }
   };
 
@@ -378,6 +414,7 @@ export function Projects() {
         <button
           type="button"
           onClick={() => {
+            setEditingBudget(null);
             setBudgetProjectId("");
             setBudgetHours("");
             setBudgetYear("");
@@ -456,7 +493,10 @@ export function Projects() {
         />
       )}
       {showAddBudget && (
-        <Modal title="Add budget" onClose={() => setShowAddBudget(false)}>
+        <Modal
+          title={editingBudget !== null ? "Edit budget" : "Add budget"}
+          onClose={closeBudgetModal}
+        >
           <form onSubmit={handleSubmitBudget} className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
               <label
@@ -469,7 +509,8 @@ export function Projects() {
                 id="budget-project-input"
                 value={budgetProjectId}
                 onChange={(e) => setBudgetProjectId(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                disabled={editingBudget !== null}
+                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:opacity-60"
               >
                 <option value="">(select)</option>
                 {projects.map((project) => (
@@ -519,7 +560,7 @@ export function Projects() {
             <div className="mt-2 flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setShowAddBudget(false)}
+                onClick={closeBudgetModal}
                 className="rounded border border-zinc-300 bg-white px-3 py-1 font-medium text-zinc-700 transition hover:bg-zinc-50"
               >
                 Cancel
