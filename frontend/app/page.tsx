@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-row gap-8 px-8">
-      <section className="w-full max-w-2xl">
+      <section className="flex-1">
         <CalendarWeekTable
           year={year}
           calendarWeek={calendarWeek}
@@ -32,7 +32,7 @@ export default function Home() {
           onCalendarWeekChange={setCalendarWeek}
         />
       </section>
-      <section className="w-full max-w-2xl">
+      <section className="flex-1">
         {/* Invisible spacer mirroring the left panel's filter row height (same box model as the
             inputs), so the tables below line up with the calendar week table. */}
         <div aria-hidden className="invisible mb-4">

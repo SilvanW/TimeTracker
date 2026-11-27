@@ -4,15 +4,19 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { SortingState } from "@tanstack/react-table";
 import { apiFetch } from "../lib/api";
 import { YearFilter } from "../components/input";
+import { SortableHeader } from "../components/sortable-header";
 
 type ProjectTime = {
   project_name: string;
+  project_nr: number | null;
   total_time: number;
 };
 
@@ -22,6 +26,13 @@ const columns = [
   columnHelper.accessor("project_name", {
     header: () => "Project Name",
     cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("project_nr", {
+    header: () => "Project Number",
+    cell: (info) => {
+      const value = info.getValue();
+      return value === null || value === undefined ? "—" : value;
+    },
   }),
   columnHelper.accessor("total_time", {
     header: () => "Total Time",
@@ -40,6 +51,7 @@ export function Projects() {
   const [data, setData] = useState<ProjectTime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Prefill the name filter when arriving via /projects?project=...
@@ -89,7 +101,10 @@ export function Projects() {
   const table = useReactTable({
     data: filtered,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
@@ -148,17 +163,7 @@ export function Projects() {
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="px-6 py-3 border-b border-zinc-200 text-left font-bold text-zinc-700 transition bg-zinc-100"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </th>
+                    <SortableHeader key={header.id} header={header} />
                   ))}
                 </tr>
               ))}

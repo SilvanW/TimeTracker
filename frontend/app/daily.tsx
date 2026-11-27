@@ -4,10 +4,13 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
+  type SortingState,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "./lib/api";
+import { SortableHeader } from "./components/sortable-header";
 
 type DayTime = {
   year: number;
@@ -35,7 +38,7 @@ const columns = [
       return isNaN(value) ? "" : value.toFixed(2);
     },
   }),
-  columnHelper.display({
+  columnHelper.accessor("total_time", {
     id: "target_reached",
     header: () => "Target Reached",
     cell: (info) => {
@@ -53,7 +56,7 @@ const columns = [
       );
     },
   }),
-  columnHelper.display({
+  columnHelper.accessor("total_time", {
     id: "time_diff",
     header: () => "Difference",
     cell: (info) => {
@@ -106,6 +109,7 @@ export function WeekDays({
 }) {
   const [data, setData] = useState<DayTime[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [debouncedParams, setDebouncedParams] = useState({
     year,
     calendarWeek,
@@ -158,11 +162,14 @@ export function WeekDays({
   const table = useReactTable({
     data: rows,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-1 px-2">
+    <div className="w-full mt-1 px-2">
       <div
         className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
         style={{ maxHeight: "60vh" }}
@@ -181,17 +188,7 @@ export function WeekDays({
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="px-6 py-3 border-b border-zinc-200 text-left font-bold text-zinc-700 transition bg-zinc-100"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </th>
+                    <SortableHeader key={header.id} header={header} />
                   ))}
                 </tr>
               ))}

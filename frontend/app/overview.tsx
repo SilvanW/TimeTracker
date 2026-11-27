@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-table";
 import { apiFetch } from "./lib/api";
 import { YearFilter } from "./components/input";
+import { SortableHeader } from "./components/sortable-header";
 
 type CalendarWeekProps = {
   year: number;
@@ -88,6 +89,7 @@ export function CalendarWeekTable({
 
     const targetReachedCol: ColumnDef<any> = {
       id: "target_reached",
+      accessorFn: (row: any) => Number(row?.total_time) >= WEEKLY_TARGET,
       header: "Target Reached",
       cell: (info: any) => {
         const row = info.row.original;
@@ -108,6 +110,7 @@ export function CalendarWeekTable({
 
     const diffCol: ColumnDef<any> = {
       id: "time_diff",
+      accessorFn: (row: any) => Number(row?.total_time) - WEEKLY_TARGET,
       header: "Difference",
       cell: (info: any) => {
         const row = info.row.original;
@@ -151,7 +154,7 @@ export function CalendarWeekTable({
   if (error) return <div>{error}</div>;
   if (!Array.isArray(data) || data.length === 0)
     return (
-      <div className="w-full max-w-4xl mx-auto mt-1 px-2">
+      <div className="w-full mt-1 px-2">
         <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
           No data found.
         </div>
@@ -159,7 +162,7 @@ export function CalendarWeekTable({
     );
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-1 px-2">
+    <div className="w-full mt-1 px-2">
       <div className="mb-4 flex items-center gap-4">
         <YearFilter
           value={year}
@@ -176,24 +179,7 @@ export function CalendarWeekTable({
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-6 py-3 border-b border-zinc-200 text-left font-bold text-zinc-700 cursor-pointer select-none transition bg-zinc-100 hover:bg-zinc-200"
-                    onClick={
-                      header.column.getCanSort()
-                        ? header.column.getToggleSortingHandler()
-                        : undefined
-                    }
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
-                    {{
-                      asc: <span className="ml-2 text-xs">▲</span>,
-                      desc: <span className="ml-2 text-xs">▼</span>,
-                    }[header.column.getIsSorted() as string] ?? null}
-                  </th>
+                  <SortableHeader key={header.id} header={header} />
                 ))}
               </tr>
             ))}

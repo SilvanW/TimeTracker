@@ -1,11 +1,12 @@
 from enum import Enum
 from typing import Optional
+
 from fastapi import APIRouter
-from sqlmodel import desc, select, func
+from sqlmodel import desc, func, select
 
 from app.database.db import SessionDep
-from app.database.time import CreateTime, KWTime, Time, ProjectTime, DOYTime
 from app.database.project import Project
+from app.database.time import CreateTime, DOYTime, KWTime, ProjectTime, Time
 
 router = APIRouter(prefix="/time", tags=["time"])
 
@@ -46,6 +47,7 @@ def get_time_by_calendar_week(
     time = session.exec(query).all()
     return time
 
+
 @router.get("/day_of_year")
 def get_time_by_day_of_year(
     session: SessionDep, year: Optional[int] = None
@@ -71,6 +73,7 @@ def get_time_by_day_of_year(
     time = session.exec(query).all()
     return time
 
+
 @router.get("/project")
 def read_time_by_project(
     session: SessionDep, calendar_week: Optional[int] = None, year: Optional[int] = None
@@ -78,6 +81,7 @@ def read_time_by_project(
     query = (
         select(
             Project.name.label("project_name"),
+            Project.project_nr,
             func.sum(func.extract("epoch", Time.end - Time.start) / 3600.0).label(
                 "total_time"
             ),
