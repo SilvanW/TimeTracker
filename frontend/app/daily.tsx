@@ -53,11 +53,13 @@ export function WeekDays({
   calendarWeek,
   selectedDay,
   onDaySelect,
+  refreshKey,
 }: {
   year: number;
   calendarWeek: number;
   selectedDay: number;
   onDaySelect: (dayOfYear: number) => void;
+  refreshKey: number;
 }) {
   const [data, setData] = useState<DayTime[]>([]);
   const [targets, setTargets] = useState<WorkingHoursTarget[]>([]);
@@ -100,7 +102,7 @@ export function WeekDays({
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to fetch data"),
       );
-  }, [debouncedParams]);
+  }, [debouncedParams, refreshKey]);
 
   const rows = useMemo(() => {
     if (debouncedParams.year <= 0 || debouncedParams.calendarWeek < 1)

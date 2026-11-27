@@ -44,9 +44,10 @@ const columns = [
 type DetailProps = {
   year: number;
   calendarWeek: number;
+  refreshKey: number;
 };
 
-export function Detail({ year, calendarWeek }: DetailProps) {
+export function Detail({ year, calendarWeek, refreshKey }: DetailProps) {
   const [data, setData] = useState<ProjectTime[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -79,7 +80,7 @@ export function Detail({ year, calendarWeek }: DetailProps) {
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to fetch data"),
       );
-  }, [debouncedParams]);
+  }, [debouncedParams, refreshKey]);
 
   const table = useReactTable({
     data,

@@ -22,6 +22,7 @@ type CalendarWeekProps = {
   onYearChange: (value: number) => void;
   onCalendarWeekChange: (value: number) => void;
   onDefaultSelect?: (year: number, calendarWeek: number) => void;
+  refreshKey: number;
 };
 
 export function CalendarWeekTable({
@@ -30,6 +31,7 @@ export function CalendarWeekTable({
   onYearChange,
   onCalendarWeekChange,
   onDefaultSelect,
+  refreshKey,
 }: CalendarWeekProps) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ export function CalendarWeekTable({
         setError(err instanceof Error ? err.message : "Failed to fetch data");
         setLoading(false);
       });
-  }, [debouncedYear]);
+  }, [debouncedYear, refreshKey]);
 
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);

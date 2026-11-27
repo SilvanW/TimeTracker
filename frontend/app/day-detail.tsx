@@ -56,9 +56,10 @@ function formatTime(value: string): string {
 type DayDetailProps = {
   year: number;
   dayOfYear: number;
+  refreshKey: number;
 };
 
-export function DayDetail({ year, dayOfYear }: DayDetailProps) {
+export function DayDetail({ year, dayOfYear, refreshKey }: DayDetailProps) {
   const [data, setData] = useState<TimeEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -88,7 +89,7 @@ export function DayDetail({ year, dayOfYear }: DayDetailProps) {
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to fetch data"),
       );
-  }, [debouncedParams]);
+  }, [debouncedParams, refreshKey]);
 
   const table = useReactTable({
     data,
