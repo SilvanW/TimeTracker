@@ -11,12 +11,14 @@ import { apiFetch } from "./lib/api";
 
 type CalendarWeekProps = {
   year: number;
+  calendarWeek: number;
   onYearChange: (value: number) => void;
-  onCalendarWeekChange?: (value: number) => void;
+  onCalendarWeekChange: (value: number) => void;
 };
 
 export function CalendarWeekTable({
   year,
+  calendarWeek,
   onYearChange,
   onCalendarWeekChange,
 }: CalendarWeekProps) {
@@ -24,21 +26,18 @@ export function CalendarWeekTable({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [view, setView] = useState<"calendar_week" | "day_of_year">(
-    "calendar_week",
-  );
   const [debouncedYear, setDebouncedYear] = useState<number>(year);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const WEEKLY_TARGET = 43;
-  const DAILY_TARGET = WEEKLY_TARGET / 5;
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    const path =
-      view === "calendar_week" ? "/time/calendar_week" : "/time/day_of_year";
-    const url = debouncedYear > 0 ? `${path}?year=${debouncedYear}` : path;
+    const url =
+      debouncedYear > 0
+        ? `/time/calendar_week?year=${debouncedYear}`
+        : "/time/calendar_week";
     apiFetch<any[]>(url)
       .then((json) => {
         setData(json);
@@ -48,7 +47,7 @@ export function CalendarWeekTable({
         setError(err instanceof Error ? err.message : "Failed to fetch data");
         setLoading(false);
       });
-  }, [view, debouncedYear]);
+  }, [debouncedYear]);
 
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -92,8 +91,7 @@ export function CalendarWeekTable({
       cell: (info: any) => {
         const row = info.row.original;
         const value = Number(row?.total_time);
-        const isWeekly = view === "calendar_week";
-        const target = isWeekly ? WEEKLY_TARGET : DAILY_TARGET;
+        const target = WEEKLY_TARGET;
         const reached = value >= target;
         return (
           <span
@@ -113,8 +111,7 @@ export function CalendarWeekTable({
       cell: (info: any) => {
         const row = info.row.original;
         const value = Number(row?.total_time);
-        const isWeekly = view === "calendar_week";
-        const target = isWeekly ? WEEKLY_TARGET : DAILY_TARGET;
+        const target = WEEKLY_TARGET;
         const diff = value - target;
         const positive = diff >= 0;
         return (
@@ -131,7 +128,7 @@ export function CalendarWeekTable({
     const cols = [...baseColumns];
     cols.splice(insertIdx, 0, targetReachedCol, diffCol);
     return cols;
-  }, [data, view]);
+  }, [data]);
 
   const table = useReactTable({
     data,
@@ -146,9 +143,7 @@ export function CalendarWeekTable({
     // row is a TanStack Row model — the actual data lives on row.original
     const original = row.original;
     onYearChange(original.year);
-    if (view === "calendar_week" && onCalendarWeekChange) {
-      onCalendarWeekChange(original.calendar_week);
-    }
+    onCalendarWeekChange(original.calendar_week);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -165,22 +160,6 @@ export function CalendarWeekTable({
   return (
     <div className="w-full max-w-4xl mx-auto mt-1 px-2">
       <div className="mb-4 flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label htmlFor="view-select" className="font-medium text-zinc-700">
-            View:
-          </label>
-          <select
-            id="view-select"
-            value={view}
-            onChange={(e) =>
-              setView(e.target.value as "calendar_week" | "day_of_year")
-            }
-            className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          >
-            <option value="calendar_week">Calendar Week</option>
-            <option value="day_of_year">Day of Year</option>
-          </select>
-        </div>
         <div className="flex items-center gap-2">
           <label htmlFor="year-input" className="font-medium text-zinc-700">
             Year:
@@ -242,7 +221,12 @@ export function CalendarWeekTable({
               <tr
                 key={row.id}
                 className={`transition ${
-                  Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
+                  row.original.year === year &&
+                  row.original.calendar_week === calendarWeek
+                    ? "bg-blue-100"
+                    : Number(row.id) % 2 === 0
+                      ? "bg-white"
+                      : "bg-zinc-50"
                 } hover:bg-blue-100/40`}
                 onClick={() => handleRowClick(row)}
                 style={{ cursor: "pointer" }}

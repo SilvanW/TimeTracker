@@ -1,0 +1,226 @@
+"use client";
+
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { apiFetch } from "./lib/api";
+
+type DayTime = {
+  year: number;
+  day_of_year: number;
+  total_time: number;
+};
+
+const WEEKLY_TARGET = 43;
+const DAILY_TARGET = WEEKLY_TARGET / 5;
+
+const columnHelper = createColumnHelper<{
+  day_of_year: number;
+  total_time: number;
+}>();
+
+const columns = [
+  columnHelper.accessor("day_of_year", {
+    header: () => "Day of Year",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("total_time", {
+    header: () => "Total Time",
+    cell: (info) => {
+      const value = Number(info.getValue());
+      return isNaN(value) ? "" : value.toFixed(2);
+    },
+  }),
+  columnHelper.display({
+    id: "target_reached",
+    header: () => "Target Reached",
+    cell: (info) => {
+      const row = info.row.original;
+      const value = Number(row.total_time);
+      const reached = value >= DAILY_TARGET;
+      return (
+        <span
+          className={`px-3 py-1 rounded font-semibold text-white ${
+            reached ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
+          {reached ? "Yes" : "No"}
+        </span>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "time_diff",
+    header: () => "Difference",
+    cell: (info) => {
+      const row = info.row.original;
+      const value = Number(row.total_time);
+      const diff = value - DAILY_TARGET;
+      const positive = diff >= 0;
+      return (
+        <span
+          className={`font-semibold ${
+            positive ? "text-green-500" : "text-red-500"
+          }`}
+        >
+          {positive ? "+" : ""}
+          {diff.toFixed(2)}
+        </span>
+      );
+    },
+  }),
+];
+
+// 1-based calendar day-of-year values (PostgreSQL EXTRACT(DOY FROM ...))
+// that ISO week `week` of ISO year `year` occupies within calendar year `year`.
+// Jan 4 is always in ISO week 1, so anchor the week on it.
+function dayOfYearsOfIsoWeek(year: number, week: number): number[] {
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const dayNum = jan4.getUTCDay() || 7; // Mon=1 .. Sun=7
+  const monday = new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate() - (dayNum - 1) + (week - 1) * 7);
+  const startOfYear = new Date(Date.UTC(year, 0, 1));
+  const days: number[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setUTCDate(monday.getUTCDate() + i);
+    if (d.getUTCFullYear() === year) {
+      days.push(
+        Math.floor((d.getTime() - startOfYear.getTime()) / 86400000) + 1,
+      );
+    }
+  }
+  return days;
+}
+
+export function WeekDays({
+  year,
+  calendarWeek,
+}: {
+  year: number;
+  calendarWeek: number;
+}) {
+  const [data, setData] = useState<DayTime[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [debouncedParams, setDebouncedParams] = useState({
+    year,
+    calendarWeek,
+  });
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      setDebouncedParams((prev) =>
+        prev.year === year && prev.calendarWeek === calendarWeek
+          ? prev
+          : { year, calendarWeek },
+      );
+    }, 500);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+  }, [year, calendarWeek]);
+
+  useEffect(() => {
+    setError(null);
+    if (debouncedParams.year <= 0) {
+      setData([]);
+      return;
+    }
+    apiFetch<DayTime[]>(`/time/day_of_year?year=${debouncedParams.year}`)
+      .then((json) => setData(json))
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Failed to fetch data"),
+      );
+  }, [debouncedParams]);
+
+  const rows = useMemo(() => {
+    if (debouncedParams.year <= 0 || debouncedParams.calendarWeek < 1)
+      return [];
+    const days = dayOfYearsOfIsoWeek(
+      debouncedParams.year,
+      debouncedParams.calendarWeek,
+    );
+    const daySet = new Set(days);
+    return data
+      .filter(
+        (row) =>
+          row.year === debouncedParams.year && daySet.has(row.day_of_year),
+      )
+      .sort((a, b) => a.day_of_year - b.day_of_year);
+  }, [data, debouncedParams]);
+
+  const table = useReactTable({
+    data: rows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <div className="w-full max-w-4xl mx-auto mt-1 px-2">
+      <div
+        className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
+        style={{ maxHeight: "60vh" }}
+      >
+        {error ? (
+          <div className="p-8 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
+            {error}
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
+            No data found.
+          </div>
+        ) : (
+          <table className="w-full text-sm text-zinc-800">
+            <thead className="bg-zinc-100 sticky top-0 z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="px-6 py-3 border-b border-zinc-200 text-left font-bold text-zinc-700 transition bg-zinc-100"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr
+                  key={row.id}
+                  className={
+                    Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
+                  }
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className="px-6 py-3 border-b border-zinc-100"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}

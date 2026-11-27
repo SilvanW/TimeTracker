@@ -1,6 +1,7 @@
 "use client";
 import { CalendarWeekTable } from "./overview";
 import { Detail } from "./detail";
+import { WeekDays } from "./daily";
 import { useState } from "react";
 
 // ISO-8601 calendar week of a date — the same value the backend's
@@ -26,17 +27,23 @@ export default function Home() {
       <section className="w-full max-w-2xl">
         <CalendarWeekTable
           year={year}
+          calendarWeek={calendarWeek}
           onYearChange={setYear}
           onCalendarWeekChange={setCalendarWeek}
         />
       </section>
       <section className="w-full max-w-2xl">
-        <Detail
-          year={year}
-          calendarWeek={calendarWeek}
-          onChange={setYear}
-          onCalendarWeekChange={setCalendarWeek}
-        />
+        {/* Invisible spacer mirroring the left panel's filter row height (same box model as the
+            inputs), so the tables below line up with the calendar week table. */}
+        <div aria-hidden className="invisible mb-4">
+          <div className="w-28 rounded border border-zinc-300 px-3 py-1">
+            &nbsp;
+          </div>
+        </div>
+        <div className="flex flex-col gap-8">
+          <WeekDays year={year} calendarWeek={calendarWeek} />
+          <Detail year={year} calendarWeek={calendarWeek} />
+        </div>
       </section>
     </main>
   );

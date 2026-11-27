@@ -8,7 +8,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useEffect, useRef, useState } from "react";
-import { Numeric } from "./components/input";
 import { apiFetch } from "./lib/api";
 
 type ProjectTime = {
@@ -42,16 +41,9 @@ const columns = [
 type DetailProps = {
   year: number;
   calendarWeek: number;
-  onChange: (value: number) => void;
-  onCalendarWeekChange: (value: number) => void;
 };
 
-export function Detail({
-  year,
-  calendarWeek,
-  onChange,
-  onCalendarWeekChange,
-}: DetailProps) {
+export function Detail({ year, calendarWeek }: DetailProps) {
   const [data, setData] = useState<ProjectTime[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [debouncedParams, setDebouncedParams] = useState({
@@ -93,16 +85,6 @@ export function Detail({
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-1 px-2">
-      <div className="flex items-center gap-2">
-        <Numeric value={year} label="Year" onChange={onChange} />
-        <Numeric
-          value={calendarWeek}
-          label="Calendar Week"
-          min={1}
-          onChange={onCalendarWeekChange}
-        />
-      </div>
-
       <div
         className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
         style={{ maxHeight: "60vh" }}
