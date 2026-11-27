@@ -24,3 +24,36 @@ export function Numeric({ value, label, min, onChange }: NumericProps) {
     </div>
   );
 }
+
+type YearFilterProps = {
+  value: number;
+  onChange: (value: number) => void;
+  onEnter?: () => void;
+};
+
+export function YearFilter({ value, onChange, onEnter }: YearFilterProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <label htmlFor="year-input" className="font-medium text-zinc-700">
+        Year:
+      </label>
+      <input
+        id="year-input"
+        type="number"
+        min="0"
+        placeholder="(all)"
+        value={value === 0 ? "" : value}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val === "" || (/^\d+$/.test(val) && Number(val) >= 0)) {
+            onChange(Number(val));
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && onEnter) onEnter();
+        }}
+        className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
+      />
+    </div>
+  );
+}

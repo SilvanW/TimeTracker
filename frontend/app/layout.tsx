@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import { Nav } from "./components/nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,14 +34,7 @@ export default function RootLayout({
               <h1 className="text-2xl font-bold text-zinc-800 tracking-tight">
                 TimeTracker
               </h1>
-              <nav className="flex items-center gap-4 text-zinc-800">
-                <Link href="/" className="font-medium hover:underline">
-                  Overview
-                </Link>
-                <Link href="/projects" className="font-medium hover:underline">
-                  Projects
-                </Link>
-              </nav>
+              <Nav />
             </header>
             {children}
           </div>

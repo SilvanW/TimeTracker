@@ -8,6 +8,7 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import { apiFetch } from "./lib/api";
+import { YearFilter } from "./components/input";
 
 type CalendarWeekProps = {
   year: number;
@@ -160,30 +161,11 @@ export function CalendarWeekTable({
   return (
     <div className="w-full max-w-4xl mx-auto mt-1 px-2">
       <div className="mb-4 flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label htmlFor="year-input" className="font-medium text-zinc-700">
-            Year:
-          </label>
-          <input
-            id="year-input"
-            type="number"
-            min="0"
-            placeholder="(all)"
-            value={year}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "" || (/^\d+$/.test(val) && Number(val) >= 0)) {
-                onYearChange(Number(val));
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                setDebouncedYear(year);
-              }
-            }}
-            className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
-          />
-        </div>
+        <YearFilter
+          value={year}
+          onChange={onYearChange}
+          onEnter={() => setDebouncedYear(year)}
+        />
       </div>
       <div
         className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"

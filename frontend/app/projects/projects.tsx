@@ -9,6 +9,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { YearFilter } from "../components/input";
 
 type ProjectTime = {
   project_name: string;
@@ -119,25 +120,7 @@ export function Projects() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <label htmlFor="year-input" className="font-medium text-zinc-700">
-            Year:
-          </label>
-          <input
-            id="year-input"
-            type="text"
-            inputMode="numeric"
-            placeholder="(all)"
-            value={year === 0 ? "" : year}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "" || (/^\d+$/.test(val) && Number(val) >= 0)) {
-                setYear(Number(val));
-              }
-            }}
-            className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
-          />
-        </div>
+        <YearFilter value={year} onChange={setYear} />
       </div>
       <div
         className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
