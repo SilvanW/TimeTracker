@@ -240,6 +240,7 @@ export default function Home() {
                 year={year}
                 dayOfYear={selectedDay}
                 refreshKey={refreshKey}
+                onEdited={() => setRefreshKey((k) => k + 1)}
               />
             )}
             <Detail

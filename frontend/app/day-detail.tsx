@@ -6,11 +6,21 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
+  type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { apiFetch } from "./lib/api";
+import { Modal } from "./components/modal";
 import { SortableHeader } from "./components/sortable-header";
+import { fetchProjects, type Project } from "./lib/projects";
 
 type TimeEntry = {
   id: number;
@@ -23,31 +33,6 @@ type TimeEntry = {
 
 const columnHelper = createColumnHelper<TimeEntry>();
 
-const columns = [
-  columnHelper.accessor("start", {
-    header: () => "Start",
-    cell: (info) => formatTime(info.getValue()),
-  }),
-  columnHelper.accessor("end", {
-    header: () => "End",
-    cell: (info) => formatTime(info.getValue()),
-  }),
-  columnHelper.accessor("total_time", {
-    header: () => "Time Worked",
-    cell: (info) => {
-      const value = Number(info.getValue());
-      return isNaN(value) ? "" : value.toFixed(2);
-    },
-  }),
-  columnHelper.accessor("description", {
-    header: () => "Description",
-    cell: (info) => {
-      const value = info.getValue();
-      return value === null || value === undefined ? "—" : value;
-    },
-  }),
-];
-
 // "2026-03-04T09:15:00" -> "09:15"
 function formatTime(value: string): string {
   return value.slice(11, 16);
@@ -57,13 +42,25 @@ type DayDetailProps = {
   year: number;
   dayOfYear: number;
   refreshKey: number;
+  onEdited: () => void;
 };
 
-export function DayDetail({ year, dayOfYear, refreshKey }: DayDetailProps) {
+export function DayDetail({
+  year,
+  dayOfYear,
+  refreshKey,
+  onEdited,
+}: DayDetailProps) {
   const [data, setData] = useState<TimeEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [debouncedParams, setDebouncedParams] = useState({ year, dayOfYear });
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [editing, setEditing] = useState<TimeEntry | null>(null);
+  const [editProjectId, setEditProjectId] = useState<string>("");
+  const [editStart, setEditStart] = useState<string>("");
+  const [editEnd, setEditEnd] = useState<string>("");
+  const [editDescription, setEditDescription] = useState<string>("");
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -81,6 +78,12 @@ export function DayDetail({ year, dayOfYear, refreshKey }: DayDetailProps) {
   }, [year, dayOfYear]);
 
   useEffect(() => {
+    fetchProjects()
+      .then(setProjects)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     setError(null);
     apiFetch<TimeEntry[]>(
       `/time/day?year=${debouncedParams.year}&day_of_year=${debouncedParams.dayOfYear}`,
@@ -90,6 +93,97 @@ export function DayDetail({ year, dayOfYear, refreshKey }: DayDetailProps) {
         setError(err instanceof Error ? err.message : "Failed to fetch data"),
       );
   }, [debouncedParams, refreshKey]);
+
+  const openEdit = useCallback((entry: TimeEntry) => {
+    setEditing(entry);
+    setEditProjectId(String(entry.project_id));
+    setEditStart(entry.start.slice(0, 16));
+    setEditEnd(entry.end.slice(0, 16));
+    setEditDescription(entry.description ?? "");
+  }, []);
+
+  const closeEdit = () => {
+    setEditing(null);
+    setEditProjectId("");
+    setEditStart("");
+    setEditEnd("");
+    setEditDescription("");
+  };
+
+  const canSubmitEdit =
+    editing !== null &&
+    editProjectId !== "" &&
+    editStart !== "" &&
+    editEnd !== "" &&
+    editEnd > editStart;
+
+  const editTimeWorked =
+    editStart !== "" && editEnd !== "" && editEnd > editStart
+      ? (new Date(editEnd).getTime() - new Date(editStart).getTime()) / 3600000
+      : null;
+
+  const handleSubmitEdit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!canSubmitEdit || editing === null) return;
+    try {
+      await apiFetch(`/time/${editing.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project_id: Number(editProjectId),
+          start: editStart,
+          end: editEnd,
+          description: editDescription === "" ? null : editDescription,
+        }),
+      });
+      closeEdit();
+      onEdited();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update time");
+    }
+  };
+
+  const columns = useMemo<ColumnDef<TimeEntry, any>[]>(
+    () => [
+      columnHelper.accessor("start", {
+        header: () => "Start",
+        cell: (info) => formatTime(info.getValue()),
+      }),
+      columnHelper.accessor("end", {
+        header: () => "End",
+        cell: (info) => formatTime(info.getValue()),
+      }),
+      columnHelper.accessor("total_time", {
+        header: () => "Time Worked",
+        cell: (info) => {
+          const value = Number(info.getValue());
+          return isNaN(value) ? "" : value.toFixed(2);
+        },
+      }),
+      columnHelper.accessor("description", {
+        header: () => "Description",
+        cell: (info) => {
+          const value = info.getValue();
+          return value === null || value === undefined ? "—" : value;
+        },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: () => "",
+        cell: (info) => (
+          <button
+            type="button"
+            onClick={() => openEdit(info.row.original)}
+            aria-label="Edit time entry"
+            className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
+          >
+            Edit
+          </button>
+        ),
+      }),
+    ],
+    [openEdit],
+  );
 
   const table = useReactTable({
     data,
@@ -150,6 +244,102 @@ export function DayDetail({ year, dayOfYear, refreshKey }: DayDetailProps) {
           </table>
         )}
       </div>
+      {editing !== null && (
+        <Modal title="Edit time" onClose={closeEdit}>
+          <form onSubmit={handleSubmitEdit} className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="edit-project-input"
+                className="font-medium text-zinc-700"
+              >
+                Project:
+              </label>
+              <select
+                id="edit-project-input"
+                value={editProjectId}
+                onChange={(e) => setEditProjectId(e.target.value)}
+                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                    {project.project_nr !== null
+                      ? ` (${project.project_nr})`
+                      : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="edit-start-input"
+                className="font-medium text-zinc-700"
+              >
+                Start:
+              </label>
+              <input
+                id="edit-start-input"
+                type="datetime-local"
+                value={editStart}
+                onChange={(e) => setEditStart(e.target.value)}
+                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </div>
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="edit-end-input"
+                className="font-medium text-zinc-700"
+              >
+                End:
+              </label>
+              <input
+                id="edit-end-input"
+                type="datetime-local"
+                value={editEnd}
+                onChange={(e) => setEditEnd(e.target.value)}
+                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </div>
+            {editTimeWorked !== null && (
+              <p className="text-sm text-zinc-600">
+                Time worked: {editTimeWorked.toFixed(2)} h
+              </p>
+            )}
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="edit-description-input"
+                className="font-medium text-zinc-700"
+              >
+                Description:
+              </label>
+              <input
+                id="edit-description-input"
+                type="text"
+                placeholder="(optional)"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-48"
+              />
+            </div>
+            <div className="mt-2 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeEdit}
+                className="rounded border border-zinc-300 bg-white px-3 py-1 font-medium text-zinc-700 transition hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!canSubmitEdit}
+                className="rounded bg-blue-500 px-3 py-1 font-medium text-white transition hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

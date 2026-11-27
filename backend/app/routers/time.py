@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter
 from sqlmodel import desc, func, select
@@ -134,6 +134,24 @@ def read_time_by_project(
 @router.post("/")
 def create_time(time: CreateTime, session: SessionDep) -> Time:
     db_time = Time(**time.model_dump())
+    session.add(db_time)
+    session.commit()
+    session.refresh(db_time)
+    return db_time
+
+
+@router.put("/{time_id}")
+def update_time(time_id: int, time: CreateTime, session: SessionDep) -> Any:
+    # Any: returns the entry, or an error dict (200 + {"error": ...}
+    # convention used across this API).
+    db_time = session.get(Time, time_id)
+
+    if not db_time:
+        return {"error": "Time entry not found"}
+
+    for key, value in time.model_dump().items():
+        setattr(db_time, key, value)
+
     session.add(db_time)
     session.commit()
     session.refresh(db_time)
