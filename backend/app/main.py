@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from .database.db import create_db_and_tables
-from .routers import projects, time
-from .routers import analytics
-from .routers import contract
+from .routers import analytics, contract, projects, time, working_hours
 
 app = FastAPI()
 
@@ -20,6 +19,7 @@ app.include_router(projects.router)
 app.include_router(time.router)
 app.include_router(analytics.router)
 app.include_router(contract.router)
+app.include_router(working_hours.router)
 
 
 @app.on_event("startup")

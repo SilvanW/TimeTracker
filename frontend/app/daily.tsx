@@ -6,11 +6,17 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
+  type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "./lib/api";
 import { SortableHeader } from "./components/sortable-header";
+import {
+  dayTargetHours,
+  fetchWorkingHoursTargets,
+  type WorkingHoursTarget,
+} from "./lib/targets";
 
 type DayTime = {
   year: number;
@@ -18,48 +24,7 @@ type DayTime = {
   total_time: number;
 };
 
-const WEEKLY_TARGET = 43;
-const DAILY_TARGET = WEEKLY_TARGET / 5;
-
 const columnHelper = createColumnHelper<DayTime>();
-
-const columns = [
-  columnHelper.accessor("day_of_year", {
-    header: () => "Date",
-    cell: (info) => {
-      const row = info.row.original;
-      const date = new Date(Date.UTC(row.year, 0, row.day_of_year - 1));
-      return date.toISOString().slice(0, 10);
-    },
-  }),
-  columnHelper.accessor("total_time", {
-    header: () => "Total Time",
-    cell: (info) => {
-      const value = Number(info.getValue());
-      return isNaN(value) ? "" : value.toFixed(2);
-    },
-  }),
-  columnHelper.accessor("total_time", {
-    id: "time_diff",
-    header: () => "Difference",
-    cell: (info) => {
-      const row = info.row.original;
-      const value = Number(row.total_time);
-      const diff = value - DAILY_TARGET;
-      const positive = diff >= 0;
-      return (
-        <span
-          className={`px-3 py-1 rounded font-semibold text-white ${
-            positive ? "bg-green-500" : "bg-red-500"
-          }`}
-        >
-          {positive ? "+" : ""}
-          {diff.toFixed(2)}
-        </span>
-      );
-    },
-  }),
-];
 
 // 1-based calendar day-of-year values (PostgreSQL EXTRACT(DOY FROM ...))
 // that ISO week `week` of ISO year `year` occupies within calendar year `year`.
@@ -95,6 +60,7 @@ export function WeekDays({
   onDaySelect: (dayOfYear: number) => void;
 }) {
   const [data, setData] = useState<DayTime[]>([]);
+  const [targets, setTargets] = useState<WorkingHoursTarget[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [debouncedParams, setDebouncedParams] = useState({
@@ -102,6 +68,12 @@ export function WeekDays({
     calendarWeek,
   });
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    fetchWorkingHoursTargets()
+      .then(setTargets)
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -145,6 +117,52 @@ export function WeekDays({
       )
       .sort((a, b) => a.day_of_year - b.day_of_year);
   }, [data, debouncedParams]);
+
+  const columns = useMemo<ColumnDef<DayTime, any>[]>(
+    () => [
+      columnHelper.accessor("day_of_year", {
+        header: () => "Date",
+        cell: (info) => {
+          const row = info.row.original;
+          const date = new Date(Date.UTC(row.year, 0, row.day_of_year - 1));
+          return date.toISOString().slice(0, 10);
+        },
+      }),
+      columnHelper.accessor("total_time", {
+        header: () => "Total Time",
+        cell: (info) => {
+          const value = Number(info.getValue());
+          return isNaN(value) ? "" : value.toFixed(2);
+        },
+      }),
+      {
+        id: "time_diff",
+        accessorFn: (row) => {
+          const target = dayTargetHours(targets, row.year, row.day_of_year);
+          return target === null ? null : Number(row.total_time) - target;
+        },
+        header: "Difference",
+        cell: (info) => {
+          const row = info.row.original;
+          const target = dayTargetHours(targets, row.year, row.day_of_year);
+          if (target === null) return "—";
+          const diff = Number(row.total_time) - target;
+          const positive = diff >= 0;
+          return (
+            <span
+              className={`px-3 py-1 rounded font-semibold text-white ${
+                positive ? "bg-green-500" : "bg-red-500"
+              }`}
+            >
+              {positive ? "+" : ""}
+              {diff.toFixed(2)}
+            </span>
+          );
+        },
+      },
+    ],
+    [targets],
+  );
 
   const table = useReactTable({
     data: rows,

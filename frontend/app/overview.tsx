@@ -10,6 +10,11 @@ import {
 import { apiFetch } from "./lib/api";
 import { YearFilter } from "./components/input";
 import { SortableHeader } from "./components/sortable-header";
+import {
+  fetchWorkingHoursTargets,
+  weekTargetHours,
+  type WorkingHoursTarget,
+} from "./lib/targets";
 
 type CalendarWeekProps = {
   year: number;
@@ -29,9 +34,14 @@ export function CalendarWeekTable({
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [debouncedYear, setDebouncedYear] = useState<number>(year);
+  const [targets, setTargets] = useState<WorkingHoursTarget[]>([]);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const WEEKLY_TARGET = 43;
+  useEffect(() => {
+    fetchWorkingHoursTargets()
+      .then(setTargets)
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -89,13 +99,16 @@ export function CalendarWeekTable({
 
     const diffCol: ColumnDef<any> = {
       id: "time_diff",
-      accessorFn: (row: any) => Number(row?.total_time) - WEEKLY_TARGET,
+      accessorFn: (row: any) => {
+        const target = weekTargetHours(targets, row?.year, row?.calendar_week);
+        return target === null ? null : Number(row?.total_time) - target;
+      },
       header: "Difference",
       cell: (info: any) => {
         const row = info.row.original;
-        const value = Number(row?.total_time);
-        const target = WEEKLY_TARGET;
-        const diff = value - target;
+        const target = weekTargetHours(targets, row?.year, row?.calendar_week);
+        if (target === null) return "—";
+        const diff = Number(row?.total_time) - target;
         const positive = diff >= 0;
         return (
           <span

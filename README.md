@@ -18,15 +18,27 @@ docker compose up -d postgres
 
 Postgres is then reachable at `localhost:5433`.
 
+A second, disposable `test_postgres` instance is available for development and
+testing:
+
+```bash
+docker compose up -d test_postgres
+```
+
+It is reachable at `localhost:5434`.
+
 ### 2. Configure the environment
 
 The backend and the alembic migrations read the `.env` file at the project root.
 For local development, `POSTGRES_URL` must point at the host-mapped port of the
-docker container (adjust the password to match `POSTGRES_PASSWORD`):
+docker container you want to use (adjust the password to match
+`POSTGRES_PASSWORD`):
 
 ```env
 POSTGRES_URL=postgresql+psycopg2://postgres:your_password@localhost:5433/postgres
 ```
+
+To use the `test_postgres` instance instead, point at `localhost:5434`.
 
 > When deploying with `docker compose`, use `postgresql+psycopg2://postgres:your_password@postgres:5432/postgres` instead.
 
