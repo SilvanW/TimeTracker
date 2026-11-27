@@ -21,6 +21,7 @@ type CalendarWeekProps = {
   calendarWeek: number;
   onYearChange: (value: number) => void;
   onCalendarWeekChange: (value: number) => void;
+  onDefaultSelect?: (year: number, calendarWeek: number) => void;
 };
 
 export function CalendarWeekTable({
@@ -28,6 +29,7 @@ export function CalendarWeekTable({
   calendarWeek,
   onYearChange,
   onCalendarWeekChange,
+  onDefaultSelect,
 }: CalendarWeekProps) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +38,7 @@ export function CalendarWeekTable({
   const [debouncedYear, setDebouncedYear] = useState<number>(year);
   const [targets, setTargets] = useState<WorkingHoursTarget[]>([]);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const appliedDefaultRef = useRef(false);
 
   useEffect(() => {
     fetchWorkingHoursTargets()
@@ -54,6 +57,14 @@ export function CalendarWeekTable({
       .then((json) => {
         setData(json);
         setLoading(false);
+        if (
+          !appliedDefaultRef.current &&
+          Array.isArray(json) &&
+          json.length > 0
+        ) {
+          appliedDefaultRef.current = true;
+          onDefaultSelect?.(json[0].year, json[0].calendar_week);
+        }
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Failed to fetch data");

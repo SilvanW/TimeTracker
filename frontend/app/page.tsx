@@ -3,7 +3,7 @@ import { CalendarWeekTable } from "./overview";
 import { DayDetail } from "./day-detail";
 import { Detail } from "./detail";
 import { WeekDays } from "./daily";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 // ISO-8601 calendar week of a date — the same value the backend's
 // PostgreSQL EXTRACT(WEEK FROM ...) produces.
@@ -24,6 +24,13 @@ export default function Home() {
   );
   const [selectedDay, setSelectedDay] = useState<number>(0);
 
+  // On first load, select the top row of the calendar week table (the most
+  // recent week with data) instead of the current week.
+  const handleDefaultSelect = useCallback((y: number, w: number) => {
+    setYear(y);
+    setCalendarWeek(w);
+  }, []);
+
   // A selected day only makes sense for the displayed week — drop it when
   // the week or year changes.
   useEffect(() => {
@@ -38,6 +45,7 @@ export default function Home() {
           calendarWeek={calendarWeek}
           onYearChange={setYear}
           onCalendarWeekChange={setCalendarWeek}
+          onDefaultSelect={handleDefaultSelect}
         />
       </section>
       <section className="flex-1">
