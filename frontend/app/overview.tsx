@@ -148,7 +148,7 @@ export function CalendarWeekTable({
   if (error) return <div>{error}</div>;
   if (!Array.isArray(data) || data.length === 0)
     return (
-      <div className="w-full mt-1 px-2">
+      <div className="w-full">
         <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
           No data found.
         </div>
@@ -156,8 +156,8 @@ export function CalendarWeekTable({
     );
 
   return (
-    <div className="w-full mt-1 px-2">
-      <div className="mb-4 flex items-center gap-4">
+    <div className="w-full">
+      <div className="mb-3 flex items-center gap-4">
         <YearFilter
           value={year}
           onChange={onYearChange}

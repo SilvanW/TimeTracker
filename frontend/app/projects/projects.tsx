@@ -108,8 +108,8 @@ export function Projects() {
   });
 
   return (
-    <main className="px-10 pt-1">
-      <div className="mb-4 flex items-center gap-4">
+    <main className="px-10 pt-3">
+      <div className="mb-3 flex items-center gap-4">
         <div className="flex items-center gap-4">
           <label htmlFor="project-input" className="font-medium text-zinc-700">
             Project:

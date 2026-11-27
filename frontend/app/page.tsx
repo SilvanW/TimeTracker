@@ -31,7 +31,7 @@ export default function Home() {
   }, [year, calendarWeek]);
 
   return (
-    <main className="flex flex-row gap-8 px-8">
+    <main className="flex flex-row gap-8 px-10 pt-3">
       <section className="flex-1">
         <CalendarWeekTable
           year={year}
@@ -43,7 +43,7 @@ export default function Home() {
       <section className="flex-1">
         {/* Invisible spacer mirroring the left panel's filter row height (same box model as the
             inputs), so the tables below line up with the calendar week table. */}
-        <div aria-hidden className="invisible mb-4">
+        <div aria-hidden className="invisible mb-3">
           <div className="w-28 rounded border border-zinc-300 px-3 py-1">
             &nbsp;
           </div>

@@ -91,7 +91,7 @@ export function Detail({ year, calendarWeek }: DetailProps) {
   });
 
   return (
-    <div className="w-full mt-1 px-2">
+    <div className="w-full">
       <div
         className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
         style={{ maxHeight: "60vh" }}

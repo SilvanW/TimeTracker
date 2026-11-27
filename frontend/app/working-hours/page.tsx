@@ -12,9 +12,19 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { apiFetch } from "../lib/api";
 import { SortableHeader } from "../components/sortable-header";
 import { ConfirmDialog } from "../components/confirm-dialog";
+import { Modal } from "../components/modal";
 import { FULL_WEEK_HOURS, type WorkingHoursTarget } from "../lib/targets";
 
 const columnHelper = createColumnHelper<WorkingHoursTarget>();
+
+// Local date as YYYY-MM-DD (date input defaults; ToISOString is UTC, so
+// shift by the timezone offset first).
+function todayIsoDate(): string {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+}
 
 export default function WorkingHoursPage() {
   const [targets, setTargets] = useState<WorkingHoursTarget[]>([]);
@@ -26,6 +36,7 @@ export default function WorkingHoursPage() {
   const [pendingDelete, setPendingDelete] = useState<WorkingHoursTarget | null>(
     null,
   );
+  const [showAdd, setShowAdd] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -59,6 +70,7 @@ export default function WorkingHoursPage() {
       });
       setEffectiveDate("");
       setPercentage("");
+      setShowAdd(false);
       load();
     } catch (err) {
       setError(
@@ -119,51 +131,22 @@ export default function WorkingHoursPage() {
   });
 
   return (
-    <main className="px-10 pt-1">
-      <form onSubmit={handleSubmit} className="mb-4 flex items-center gap-4">
-        <div className="flex items-center gap-4">
-          <label
-            htmlFor="effective-date-input"
-            className="font-medium text-zinc-700"
-          >
-            Effective from:
-          </label>
-          <input
-            id="effective-date-input"
-            type="date"
-            value={effectiveDate}
-            onChange={(e) => setEffectiveDate(e.target.value)}
-            className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <label
-            htmlFor="percentage-input"
-            className="font-medium text-zinc-700"
-          >
-            Percentage:
-          </label>
-          <input
-            id="percentage-input"
-            type="number"
-            min="0"
-            max="100"
-            placeholder="(0–100)"
-            value={percentage}
-            onChange={(e) => setPercentage(e.target.value)}
-            className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
-          />
-        </div>
+    <main className="px-10 pt-3">
+      <div className="mb-3 flex justify-end">
         <button
-          type="submit"
-          disabled={effectiveDate === "" || percentage === ""}
-          className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          type="button"
+          onClick={() => {
+            setEffectiveDate(todayIsoDate());
+            setPercentage("");
+            setShowAdd(true);
+          }}
+          className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
         >
           Add
         </button>
-      </form>
+      </div>
       {error ? (
-        <div className="mb-4 p-4 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
+        <div className="mb-3 p-4 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
           {error}
         </div>
       ) : (
@@ -227,6 +210,61 @@ export default function WorkingHoursPage() {
           }}
           onCancel={() => setPendingDelete(null)}
         />
+      )}
+      {showAdd && (
+        <Modal title="Add working hours" onClose={() => setShowAdd(false)}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="effective-date-input"
+                className="font-medium text-zinc-700"
+              >
+                Effective from:
+              </label>
+              <input
+                id="effective-date-input"
+                type="date"
+                value={effectiveDate}
+                onChange={(e) => setEffectiveDate(e.target.value)}
+                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </div>
+            <div className="flex items-center gap-4">
+              <label
+                htmlFor="percentage-input"
+                className="font-medium text-zinc-700"
+              >
+                Percentage:
+              </label>
+              <input
+                id="percentage-input"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="(0–100)"
+                value={percentage}
+                onChange={(e) => setPercentage(e.target.value)}
+                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
+              />
+            </div>
+            <div className="mt-2 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowAdd(false)}
+                className="rounded border border-zinc-300 bg-white px-3 py-1 font-medium text-zinc-700 transition hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={effectiveDate === "" || percentage === ""}
+                className="rounded bg-blue-500 px-3 py-1 font-medium text-white transition hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </main>
   );
