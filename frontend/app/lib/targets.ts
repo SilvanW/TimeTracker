@@ -52,6 +52,8 @@ export function weekTargetHours(
 }
 
 // Expected hours for a calendar day (year + 1-based day-of-year).
+// The percentage scales how many full working days (5 * percentage) make up
+// the week, so a worked day is always compared against a full 8.6h day.
 export function dayTargetHours(
   targets: WorkingHoursTarget[],
   year: number,
@@ -59,7 +61,5 @@ export function dayTargetHours(
 ): number | null {
   const date = new Date(Date.UTC(year, 0, dayOfYear - 1));
   const pct = effectiveTargetOnDate(targets, date);
-  return pct === null
-    ? null
-    : (FULL_WEEK_HOURS * pct) / 100 / WORKING_DAYS_PER_WEEK;
+  return pct === null ? null : FULL_WEEK_HOURS / WORKING_DAYS_PER_WEEK;
 }
