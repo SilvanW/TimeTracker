@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Numeric } from "./components/input";
 import { apiFetch } from "./lib/api";
 
@@ -14,8 +14,6 @@ type ProjectTime = {
   project_name: string;
   total_time: number;
 };
-
-const defaultData: ProjectTime[] = [];
 
 const columnHelper = createColumnHelper<ProjectTime>();
 
@@ -46,19 +44,38 @@ export function Detail({
   onChange,
   onCalendarWeekChange,
 }: DetailProps) {
-  const [data, setData] = useState(() => [...defaultData]);
+  const [data, setData] = useState<ProjectTime[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [debouncedParams, setDebouncedParams] = useState({
+    year,
+    calendarWeek,
+  });
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      setDebouncedParams((prev) =>
+        prev.year === year && prev.calendarWeek === calendarWeek
+          ? prev
+          : { year, calendarWeek },
+      );
+    }, 500);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+  }, [year, calendarWeek]);
 
   useEffect(() => {
     setError(null);
     apiFetch<ProjectTime[]>(
-      `/time/project?calendar_week=${calendarWeek}&year=${year}`,
+      `/time/project?calendar_week=${debouncedParams.calendarWeek}&year=${debouncedParams.year}`,
     )
       .then((json) => setData(json))
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to fetch data"),
       );
-  }, [calendarWeek, year]);
+  }, [debouncedParams]);
 
   const table = useReactTable({
     data,

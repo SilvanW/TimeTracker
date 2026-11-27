@@ -37,7 +37,6 @@ export default function Home() {
           <section className="w-full max-w-2xl">
             <CalendarWeekTable
               year={year}
-              calendar_week={calendarWeek}
               onYearChange={setYear}
               onCalendarWeekChange={setCalendarWeek}
             />

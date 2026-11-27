@@ -11,14 +11,12 @@ import { apiFetch } from "./lib/api";
 
 type CalendarWeekProps = {
   year: number;
-  calendar_week: number;
   onYearChange: (value: number) => void;
   onCalendarWeekChange?: (value: number) => void;
 };
 
 export function CalendarWeekTable({
   year,
-  calendar_week,
   onYearChange,
   onCalendarWeekChange,
 }: CalendarWeekProps) {
