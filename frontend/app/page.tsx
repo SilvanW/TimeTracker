@@ -16,7 +16,7 @@ function calendarWeekOf(date: Date): number {
 }
 
 export default function Home() {
-  const [year, setYear] = useState<number>(2026);
+  const [year, setYear] = useState<number>(() => new Date().getFullYear());
   const [calendarWeek, setCalendarWeek] = useState<number>(() =>
     calendarWeekOf(new Date()),
   );
