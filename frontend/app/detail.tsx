@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   createColumnHelper,
   flexRender,
@@ -20,7 +21,14 @@ const columnHelper = createColumnHelper<ProjectTime>();
 const columns = [
   columnHelper.accessor("project_name", {
     header: () => "Project Name",
-    cell: (info) => info.getValue(),
+    cell: (info) => (
+      <Link
+        href={`/projects?project=${encodeURIComponent(info.getValue())}`}
+        className="inline-block rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
+      >
+        {info.getValue()}
+      </Link>
+    ),
   }),
   columnHelper.accessor("total_time", {
     header: () => "Total Time",
@@ -128,9 +136,9 @@ export function Detail({
               {table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className={`transition ${
+                  className={
                     Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
-                  } hover:bg-blue-100/40`}
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
