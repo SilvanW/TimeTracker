@@ -13,6 +13,7 @@ from app.database.time import (
     KWTime,
     ProjectTime,
     Time,
+    YearTime,
 )
 
 router = APIRouter(prefix="/time", tags=["time"])
@@ -21,6 +22,26 @@ router = APIRouter(prefix="/time", tags=["time"])
 @router.get("/")
 def read_time(session: SessionDep, year: Optional[int] = None) -> list[Time]:
     query = select(Time)
+
+    if year is not None:
+        query = query.where(func.extract("year", Time.start) == year)
+
+    time = session.exec(query).all()
+    return time
+
+
+@router.get("/year")
+def get_time_by_year(session: SessionDep, year: Optional[int] = None) -> list[YearTime]:
+    query = (
+        select(
+            func.extract("year", Time.start).label("year"),
+            func.sum(func.extract("epoch", Time.end - Time.start) / 3600.0).label(
+                "total_time"
+            ),
+        )
+        .group_by(func.extract("year", Time.start))
+        .order_by(desc(func.extract("year", Time.start)))
+    )
 
     if year is not None:
         query = query.where(func.extract("year", Time.start) == year)

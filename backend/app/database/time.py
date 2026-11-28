@@ -25,6 +25,11 @@ class KWTime(BaseModel):
     total_time: float
 
 
+class YearTime(BaseModel):
+    year: int
+    total_time: float
+
+
 class DOYTime(BaseModel):
     year: int
     day_of_year: int

@@ -10,6 +10,7 @@ import { Alert } from "./components/ui/alert";
 import { Button } from "./components/ui/button";
 import { Input, Select } from "./components/ui/input";
 import { apiFetch } from "./lib/api";
+import { formatHours } from "./lib/format";
 import { fetchProjects, type Project } from "./lib/projects";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
@@ -79,6 +80,7 @@ export default function Home() {
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [timePaste, setTimePaste] = useState<string>("");
   const [timeDescription, setTimeDescription] = useState<string>("");
+  const [yearTotal, setYearTotal] = useState<number | null>(null);
 
   // On first load, select the top row of the calendar week table (the most
   // recent week with data) instead of the current week.
@@ -92,6 +94,23 @@ export default function Home() {
       .then(setProjects)
       .catch(() => {});
   }, []);
+
+  // Total hours of the selected year, shown in the page subtitle.
+  useEffect(() => {
+    let cancelled = false;
+    setYearTotal(null);
+    apiFetch<{ year: number; total_time: number }[]>(`/time/year?year=${year}`)
+      .then((json) => {
+        if (cancelled) return;
+        setYearTotal(json[0]?.total_time ?? 0);
+      })
+      .catch(() => {
+        if (!cancelled) setYearTotal(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [year, refreshKey]);
 
   // A selected day only makes sense for the displayed week — drop it when
   // the week or year changes.
@@ -202,7 +221,9 @@ export default function Home() {
       {error !== null && <Alert className="mb-6">{error}</Alert>}
       <PageHeader
         title="Overview"
-        description={`${year} · Week ${calendarWeek}`}
+        description={`${year} · Week ${calendarWeek}${
+          yearTotal !== null ? ` · Year total: ${formatHours(yearTotal)} h` : ""
+        }`}
         actions={
           <Button variant="primary" onClick={openAddTime}>
             Add time
