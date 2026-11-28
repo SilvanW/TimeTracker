@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   createColumnHelper,
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
@@ -11,7 +10,9 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "./lib/api";
-import { SortableHeader } from "./components/sortable-header";
+import { Card, CardHeader } from "./components/ui/card";
+import { DataTable } from "./components/ui/data-table";
+import { formatHours } from "./lib/format";
 
 type ProjectTime = {
   project_name: string;
@@ -22,22 +23,32 @@ const columnHelper = createColumnHelper<ProjectTime>();
 
 const columns = [
   columnHelper.accessor("project_name", {
-    header: () => "Project Name",
+    header: () => "Project",
     cell: (info) => (
       <Link
         href={`/projects?project=${encodeURIComponent(info.getValue())}`}
-        className="inline-block rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
+        className="inline-flex items-center gap-1 rounded-md border border-accent-soft-border bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent-ink transition-colors hover:opacity-80 hover:underline"
       >
         {info.getValue()}
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-3 w-3"
+        >
+          <path d="M7 7h10v10" />
+          <path d="M7 17 17 7" />
+        </svg>
       </Link>
     ),
   }),
   columnHelper.accessor("total_time", {
-    header: () => "Total Time",
-    cell: (info) => {
-      const value = Number(info.getValue());
-      return isNaN(value) ? "" : value.toFixed(2);
-    },
+    header: () => "Total time",
+    cell: (info) => formatHours(Number(info.getValue())),
   }),
 ];
 
@@ -93,50 +104,10 @@ export function Detail({ year, calendarWeek, refreshKey }: DetailProps) {
 
   return (
     <div className="w-full">
-      <div
-        className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
-        style={{ maxHeight: "60vh" }}
-      >
-        {error ? (
-          <div className="p-8 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
-            {error}
-          </div>
-        ) : (
-          <table className="w-full text-sm text-zinc-800">
-            <thead className="bg-zinc-100 sticky top-0 z-10">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <SortableHeader key={header.id} header={header} />
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={
-                    Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-6 py-3 border-b border-zinc-100"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <Card>
+        <CardHeader title="Time by project" />
+        <DataTable table={table} error={error} emptyMessage="No data found." />
+      </Card>
     </div>
   );
 }

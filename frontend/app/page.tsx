@@ -4,6 +4,11 @@ import { DayDetail } from "./day-detail";
 import { Detail } from "./detail";
 import { WeekDays } from "./daily";
 import { Modal } from "./components/modal";
+import { PageHeader } from "./components/page-header";
+import { Field, FormFooter } from "./components/form";
+import { Alert } from "./components/ui/alert";
+import { Button } from "./components/ui/button";
+import { Input, Select } from "./components/ui/input";
 import { apiFetch } from "./lib/api";
 import { fetchProjects, type Project } from "./lib/projects";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -193,79 +198,57 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col px-10 pt-3">
-      {error !== null && (
-        <div className="mb-3 p-4 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
-          {error}
-        </div>
-      )}
-      <div className="mb-3 flex justify-end">
-        <button
-          type="button"
-          onClick={openAddTime}
-          className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
-        >
-          Add time
-        </button>
-      </div>
-      <div className="flex flex-row gap-8">
-        <section className="flex-1">
-          <CalendarWeekTable
+    <>
+      {error !== null && <Alert className="mb-6">{error}</Alert>}
+      <PageHeader
+        title="Overview"
+        description={`${year} · Week ${calendarWeek}`}
+        actions={
+          <Button variant="primary" onClick={openAddTime}>
+            Add time
+          </Button>
+        }
+      />
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <CalendarWeekTable
+          year={year}
+          calendarWeek={calendarWeek}
+          onYearChange={setYear}
+          onCalendarWeekChange={setCalendarWeek}
+          onDefaultSelect={handleDefaultSelect}
+          refreshKey={refreshKey}
+        />
+        <div className="flex flex-col gap-6">
+          <WeekDays
             year={year}
             calendarWeek={calendarWeek}
-            onYearChange={setYear}
-            onCalendarWeekChange={setCalendarWeek}
-            onDefaultSelect={handleDefaultSelect}
+            selectedDay={selectedDay}
+            onDaySelect={setSelectedDay}
             refreshKey={refreshKey}
           />
-        </section>
-        <section className="flex-1">
-          {/* Invisible spacer mirroring the left panel's filter row height (same box model as the
-              inputs), so the tables below line up with the calendar week table. */}
-          <div aria-hidden className="invisible mb-3">
-            <div className="w-28 rounded border border-zinc-300 px-3 py-1">
-              &nbsp;
-            </div>
-          </div>
-          <div className="flex flex-col gap-8">
-            <WeekDays
+          {selectedDay > 0 && (
+            <DayDetail
               year={year}
-              calendarWeek={calendarWeek}
-              selectedDay={selectedDay}
-              onDaySelect={setSelectedDay}
+              dayOfYear={selectedDay}
               refreshKey={refreshKey}
+              onEdited={() => setRefreshKey((k) => k + 1)}
             />
-            {selectedDay > 0 && (
-              <DayDetail
-                year={year}
-                dayOfYear={selectedDay}
-                refreshKey={refreshKey}
-                onEdited={() => setRefreshKey((k) => k + 1)}
-              />
-            )}
-            <Detail
-              year={year}
-              calendarWeek={calendarWeek}
-              refreshKey={refreshKey}
-            />
-          </div>
-        </section>
+          )}
+          <Detail
+            year={year}
+            calendarWeek={calendarWeek}
+            refreshKey={refreshKey}
+          />
+        </div>
       </div>
       {showAddTime && (
         <Modal title="Add time" onClose={() => setShowAddTime(false)} wide>
           <form onSubmit={handleSubmitTime} className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="time-project-input"
-                className="font-medium text-zinc-700"
-              >
-                Project:
-              </label>
-              <select
+            <Field id="time-project-input" label="Project">
+              <Select
                 id="time-project-input"
                 value={timeProjectId}
                 onChange={(e) => setTimeProjectId(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="">(select)</option>
                 {projects.map((project) => (
@@ -276,97 +259,73 @@ export default function Home() {
                       : ""}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div className="flex gap-2">
+              </Select>
+            </Field>
+            <div className="inline-flex self-start rounded-lg border border-line bg-surface-2 p-0.5">
               <button
                 type="button"
                 onClick={() => setTimeMode("manual")}
-                className={`rounded px-3 py-1 font-medium transition ${
+                className={
                   timeMode === "manual"
-                    ? "bg-blue-500 text-white"
-                    : "bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100"
-                }`}
+                    ? "rounded-md bg-surface px-3 py-1.5 text-sm font-medium text-ink shadow-sm"
+                    : "rounded-md px-3 py-1.5 text-sm font-medium text-ink-2 hover:text-ink"
+                }
               >
                 Manual
               </button>
               <button
                 type="button"
                 onClick={() => setTimeMode("paste")}
-                className={`rounded px-3 py-1 font-medium transition ${
+                className={
                   timeMode === "paste"
-                    ? "bg-blue-500 text-white"
-                    : "bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100"
-                }`}
+                    ? "rounded-md bg-surface px-3 py-1.5 text-sm font-medium text-ink shadow-sm"
+                    : "rounded-md px-3 py-1.5 text-sm font-medium text-ink-2 hover:text-ink"
+                }
               >
                 Paste ranges
               </button>
             </div>
             {timeMode === "manual" && (
               <>
-                <div className="flex items-center gap-4">
-                  <label
-                    htmlFor="time-start-input"
-                    className="font-medium text-zinc-700"
-                  >
-                    Start:
-                  </label>
-                  <input
+                <Field id="time-start-input" label="Start">
+                  <Input
                     id="time-start-input"
                     type="datetime-local"
                     value={timeStart}
                     onChange={(e) => setTimeStart(e.target.value)}
-                    className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
                   />
-                </div>
-                <div className="flex items-center gap-4">
-                  <label
-                    htmlFor="time-end-input"
-                    className="font-medium text-zinc-700"
-                  >
-                    End:
-                  </label>
-                  <input
+                </Field>
+                <Field
+                  id="time-end-input"
+                  label="End"
+                  hint={
+                    manualTimeWorked !== null
+                      ? `Time worked: ${manualTimeWorked.toFixed(2)} h`
+                      : undefined
+                  }
+                >
+                  <Input
                     id="time-end-input"
                     type="datetime-local"
                     value={timeEnd}
                     onChange={(e) => setTimeEnd(e.target.value)}
-                    className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
                   />
-                </div>
-                {manualTimeWorked !== null && (
-                  <p className="text-sm text-zinc-600">
-                    Time worked: {manualTimeWorked.toFixed(2)} h
-                  </p>
-                )}
+                </Field>
               </>
             )}
             {timeMode === "paste" && (
               <>
-                <div className="flex items-center gap-4">
-                  <label
-                    htmlFor="time-day-input"
-                    className="font-medium text-zinc-700"
-                  >
-                    Day:
-                  </label>
-                  <input
+                <Field id="time-day-input" label="Day">
+                  <Input
                     id="time-day-input"
                     type="date"
                     value={timeDay}
                     onChange={(e) => setTimeDay(e.target.value)}
-                    className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
                   />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="time-paste-input"
-                    className="font-medium text-zinc-700"
-                  >
-                    Times:
-                  </label>
+                </Field>
+                <Field id="time-paste-input" label="Times">
                   <div className="flex gap-2">
-                    <input
+                    <Input
                       id="time-paste-input"
                       type="text"
                       placeholder="4:45-7:40 10:30-12:15"
@@ -378,99 +337,84 @@ export default function Home() {
                           addParsedTimes();
                         }
                       }}
-                      className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 flex-1 min-w-0"
+                      className="min-w-0 flex-1"
                     />
-                    <button
-                      type="button"
+                    <Button
+                      variant="accent-soft"
                       onClick={addParsedTimes}
-                      className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
+                      className="shrink-0"
                     >
                       Add
-                    </button>
+                    </Button>
                   </div>
-                  {timeEntries.length === 0 ? (
-                    <p className="text-sm text-zinc-500">
-                      Paste time ranges above, then add and edit them below.
-                    </p>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      {timeEntries.map((entry, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <input
-                            type="time"
-                            value={entry.start}
-                            onChange={(e) =>
-                              updateEntryTime(index, "start", e.target.value)
-                            }
-                            className="border border-zinc-300 rounded px-2 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-32"
-                          />
-                          <span className="text-zinc-500">–</span>
-                          <input
-                            type="time"
-                            value={entry.end}
-                            onChange={(e) =>
-                              updateEntryTime(index, "end", e.target.value)
-                            }
-                            className="border border-zinc-300 rounded px-2 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-32"
-                          />
-                          <div className="flex-1" />
-                          <span className="w-14 text-right text-sm text-zinc-600">
-                            {entry.end > entry.start
-                              ? `${(
-                                  hoursOfTime(entry.end) -
-                                  hoursOfTime(entry.start)
-                                ).toFixed(2)} h`
-                              : ""}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeEntry(index)}
-                            className="rounded bg-red-50 border border-red-200 px-3 py-1 font-medium text-red-700 transition hover:bg-red-100"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                </Field>
+                {timeEntries.length === 0 ? (
+                  <p className="text-sm text-ink-3">
+                    Paste time ranges above, then add and edit them below.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {timeEntries.map((entry, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Input
+                          size="sm"
+                          type="time"
+                          value={entry.start}
+                          onChange={(e) =>
+                            updateEntryTime(index, "start", e.target.value)
+                          }
+                          className="w-28"
+                        />
+                        <span className="text-ink-3">–</span>
+                        <Input
+                          size="sm"
+                          type="time"
+                          value={entry.end}
+                          onChange={(e) =>
+                            updateEntryTime(index, "end", e.target.value)
+                          }
+                          className="w-28"
+                        />
+                        <div className="flex-1" />
+                        <span className="w-14 text-right text-sm text-ink-2">
+                          {entry.end > entry.start
+                            ? `${(
+                                hoursOfTime(entry.end) -
+                                hoursOfTime(entry.start)
+                              ).toFixed(2)} h`
+                            : ""}
+                        </span>
+                        <Button
+                          variant="danger-ghost"
+                          size="sm"
+                          onClick={() => removeEntry(index)}
+                          aria-label="Remove time range"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </>
             )}
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="time-description-input"
-                className="font-medium text-zinc-700"
-              >
-                Description:
-              </label>
-              <input
+            <Field id="time-description-input" label="Description">
+              <Input
                 id="time-description-input"
                 type="text"
                 placeholder="(optional)"
                 value={timeDescription}
                 onChange={(e) => setTimeDescription(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-48"
               />
-            </div>
-            <div className="mt-2 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowAddTime(false)}
-                className="rounded border border-zinc-300 bg-white px-3 py-1 font-medium text-zinc-700 transition hover:bg-zinc-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={!canSubmitTime}
-                className="rounded bg-blue-500 px-3 py-1 font-medium text-white transition hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit
-              </button>
-            </div>
+            </Field>
+            <FormFooter
+              onCancel={() => setShowAddTime(false)}
+              submitLabel="Add time"
+              submitDisabled={!canSubmitTime}
+            />
           </form>
         </Modal>
       )}
-    </main>
+    </>
   );
 }

@@ -1,20 +1,25 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, type ReactNode } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  flexRender,
   ColumnDef,
   SortingState,
 } from "@tanstack/react-table";
 import { apiFetch } from "./lib/api";
+import { cn } from "./lib/cn";
 import { YearFilter } from "./components/input";
-import { SortableHeader } from "./components/sortable-header";
+import { Card, CardHeader } from "./components/ui/card";
+import { DataTable } from "./components/ui/data-table";
+import { formatHours, formatSigned } from "./lib/format";
 import {
   fetchWorkingHoursTargets,
   weekTargetHours,
   type WorkingHoursTarget,
 } from "./lib/targets";
+
+// The backend returns exactly these 3 fields per calendar week.
+type KWTime = { year: number; calendar_week: number; total_time: number };
 
 type CalendarWeekProps = {
   year: number;
@@ -33,7 +38,7 @@ export function CalendarWeekTable({
   onDefaultSelect,
   refreshKey,
 }: CalendarWeekProps) {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<KWTime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -55,7 +60,7 @@ export function CalendarWeekTable({
       debouncedYear > 0
         ? `/time/calendar_week?year=${debouncedYear}`
         : "/time/calendar_week";
-    apiFetch<any[]>(url)
+    apiFetch<KWTime[]>(url)
       .then((json) => {
         setData(json);
         setLoading(false);
@@ -84,62 +89,74 @@ export function CalendarWeekTable({
     };
   }, [year]);
 
-  // Always define columns, even if data is empty
-  const columns = useMemo<ColumnDef<any>[]>(() => {
-    if (!data || data.length === 0) return [];
-    const keys = Object.keys(data[0]);
-    const baseColumns = keys.map((key) => {
-      if (key === "total_time") {
-        return {
-          accessorKey: key,
+  const columns = useMemo<ColumnDef<KWTime>[]>(() => {
+    const cols: ColumnDef<KWTime>[] = [
+      {
+        accessorKey: "year",
+        header: "Year",
+      },
+      {
+        accessorKey: "calendar_week",
+        header: "Week",
+      },
+      {
+        accessorKey: "total_time",
+        header: "Total time",
+        cell: (info) => formatHours(Number(info.getValue())),
+      },
+      {
+        id: "time_diff",
+        accessorFn: (row) => {
+          const target = weekTargetHours(
+            targets,
+            row?.year,
+            row?.calendar_week,
+          );
+          return target === null ? null : Number(row?.total_time) - target;
+        },
+        header: "Difference",
+        cell: (info) => {
+          const row = info.row.original;
+          const target = weekTargetHours(
+            targets,
+            row?.year,
+            row?.calendar_week,
+          );
+          if (target === null) return "—";
+          const diff = Number(row?.total_time) - target;
+          return (
+            <span
+              className={cn(
+                "font-semibold",
+                diff >= 0
+                  ? "text-emerald-700 dark:text-emerald-400"
+                  : "text-red-700 dark:text-red-400",
+              )}
+            >
+              {formatSigned(diff)}
+            </span>
+          );
+        },
+      },
+    ];
+
+    // Safety net: the backend is expected to return only the known fields
+    // above, but any unexpected extra field is still rendered as a plain
+    // column (raw key as header, raw value as cell).
+    if (data.length > 0) {
+      const knownKeys = ["year", "calendar_week", "total_time"];
+      for (const key of Object.keys(data[0])) {
+        if (knownKeys.includes(key)) continue;
+        cols.push({
+          accessorKey: key as keyof KWTime,
           header: key,
-          cell: (info: any) => {
-            const value = Number(info.getValue());
-            return isNaN(value) ? "" : value.toFixed(2);
-          },
-        } as ColumnDef<any>;
+          cell: (info) => info.getValue() as ReactNode,
+        });
       }
-      return {
-        accessorKey: key,
-        header: key,
-        cell: (info: any) => info.getValue(),
-      } as ColumnDef<any>;
-    });
+    }
 
-    // Add Difference column after total_time (or at end if not found)
-    const totalTimeIdx = keys.indexOf("total_time");
-    const insertIdx = totalTimeIdx >= 0 ? totalTimeIdx + 1 : baseColumns.length;
-
-    const diffCol: ColumnDef<any> = {
-      id: "time_diff",
-      accessorFn: (row: any) => {
-        const target = weekTargetHours(targets, row?.year, row?.calendar_week);
-        return target === null ? null : Number(row?.total_time) - target;
-      },
-      header: "Difference",
-      cell: (info: any) => {
-        const row = info.row.original;
-        const target = weekTargetHours(targets, row?.year, row?.calendar_week);
-        if (target === null) return "—";
-        const diff = Number(row?.total_time) - target;
-        const positive = diff >= 0;
-        return (
-          <span
-            className={`px-3 py-1 rounded font-semibold text-white ${
-              positive ? "bg-green-500" : "bg-red-500"
-            }`}
-          >
-            {positive ? "+" : ""}
-            {diff.toFixed(2)}
-          </span>
-        );
-      },
-    };
-
-    const cols = [...baseColumns];
-    cols.splice(insertIdx, 0, diffCol);
     return cols;
-  }, [data]);
+  }, [data, targets]);
 
   const table = useReactTable({
     data,
@@ -157,68 +174,29 @@ export function CalendarWeekTable({
     onCalendarWeekChange(original.calendar_week);
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!Array.isArray(data) || data.length === 0)
-    return (
-      <div className="w-full">
-        <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-          No data found.
-        </div>
-      </div>
-    );
-
   return (
-    <div className="w-full">
-      <div className="mb-3 flex items-center gap-4">
-        <YearFilter
-          value={year}
-          onChange={onYearChange}
-          onEnter={() => setDebouncedYear(year)}
-        />
-      </div>
-      <div
-        className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
-        style={{ maxHeight: "60vh" }}
-      >
-        <table className="w-full text-sm text-zinc-800">
-          <thead className="bg-zinc-100 sticky top-0 z-10">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <SortableHeader key={header.id} header={header} />
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className={`transition ${
-                  row.original.year === year &&
-                  row.original.calendar_week === calendarWeek
-                    ? "bg-blue-100"
-                    : Number(row.id) % 2 === 0
-                      ? "bg-white"
-                      : "bg-zinc-50"
-                } hover:bg-blue-100/40`}
-                onClick={() => handleRowClick(row)}
-                style={{ cursor: "pointer" }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="px-6 py-3 border-b border-zinc-100"
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Card>
+      <CardHeader
+        title="Calendar weeks"
+        actions={
+          <YearFilter
+            value={year}
+            onChange={onYearChange}
+            onEnter={() => setDebouncedYear(year)}
+          />
+        }
+      />
+      <DataTable
+        table={table}
+        loading={loading}
+        error={error}
+        isRowSelected={(row) =>
+          row.original.year === year &&
+          row.original.calendar_week === calendarWeek
+        }
+        onRowClick={handleRowClick}
+        emptyMessage="No data found."
+      />
+    </Card>
   );
 }

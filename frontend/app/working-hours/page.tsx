@@ -2,7 +2,6 @@
 
 import {
   createColumnHelper,
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
@@ -10,9 +9,15 @@ import {
 } from "@tanstack/react-table";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { apiFetch } from "../lib/api";
-import { SortableHeader } from "../components/sortable-header";
 import { ConfirmDialog } from "../components/confirm-dialog";
+import { Field, FormFooter } from "../components/form";
 import { Modal } from "../components/modal";
+import { PageHeader } from "../components/page-header";
+import { Alert } from "../components/ui/alert";
+import { Button } from "../components/ui/button";
+import { Card, CardHeader } from "../components/ui/card";
+import { DataTable } from "../components/ui/data-table";
+import { Input } from "../components/ui/input";
 import { FULL_WEEK_HOURS, type WorkingHoursTarget } from "../lib/targets";
 
 const columnHelper = createColumnHelper<WorkingHoursTarget>();
@@ -29,6 +34,7 @@ function todayIsoDate(): string {
 export default function WorkingHoursPage() {
   const [targets, setTargets] = useState<WorkingHoursTarget[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [effectiveDate, setEffectiveDate] = useState("");
@@ -40,14 +46,16 @@ export default function WorkingHoursPage() {
 
   const load = useCallback(() => {
     setLoading(true);
-    setError(null);
+    setLoadError(null);
     apiFetch<WorkingHoursTarget[]>("/working_hours/")
       .then((json) => {
         setTargets(json);
         setLoading(false);
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Failed to fetch data");
+        setLoadError(
+          err instanceof Error ? err.message : "Failed to fetch data",
+        );
         setLoading(false);
       });
   }, []);
@@ -80,6 +88,7 @@ export default function WorkingHoursPage() {
   };
 
   const deleteTarget = async (target: WorkingHoursTarget) => {
+    setError(null);
     try {
       await apiFetch(`/working_hours/${target.id}`, { method: "DELETE" });
       load();
@@ -92,7 +101,7 @@ export default function WorkingHoursPage() {
 
   const columns = [
     columnHelper.accessor("effective_date", {
-      header: () => "Effective Date",
+      header: () => "Effective date",
       cell: (info) => info.getValue(),
     }),
     columnHelper.accessor("percentage", {
@@ -101,7 +110,7 @@ export default function WorkingHoursPage() {
     }),
     columnHelper.accessor("percentage", {
       id: "weekly_hours",
-      header: () => "Hours / Week",
+      header: () => "Hours per week",
       cell: (info) =>
         ((FULL_WEEK_HOURS * Number(info.getValue())) / 100).toFixed(2),
     }),
@@ -109,14 +118,14 @@ export default function WorkingHoursPage() {
       id: "delete",
       header: () => "",
       cell: (info) => (
-        <button
-          type="button"
+        <Button
+          variant="danger-ghost"
+          size="sm"
           onClick={() => setPendingDelete(info.row.original)}
           aria-label="Delete working hours"
-          className="rounded bg-red-50 border border-red-200 px-3 py-1 font-medium text-red-700 transition hover:bg-red-100"
         >
           ×
-        </button>
+        </Button>
       ),
     }),
   ];
@@ -131,74 +140,34 @@ export default function WorkingHoursPage() {
   });
 
   return (
-    <main className="px-10 pt-3">
-      <div className="mb-3 flex justify-end">
-        <button
-          type="button"
-          onClick={() => {
-            setEffectiveDate(todayIsoDate());
-            setPercentage("");
-            setShowAdd(true);
-          }}
-          className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
-        >
-          Add
-        </button>
-      </div>
-      {error ? (
-        <div className="mb-3 p-4 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
-          {error}
-        </div>
-      ) : (
-        <div
-          className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
-          style={{ maxHeight: "60vh" }}
-        >
-          {loading ? (
-            <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-              Loading...
-            </div>
-          ) : targets.length === 0 ? (
-            <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-              No data found.
-            </div>
-          ) : (
-            <table className="w-full text-sm text-zinc-800">
-              <thead className="bg-zinc-100 sticky top-0 z-10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <SortableHeader key={header.id} header={header} />
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className={
-                      Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
-                    }
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="px-6 py-3 border-b border-zinc-100"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+    <>
+      {error !== null && <Alert className="mb-6">{error}</Alert>}
+      <PageHeader
+        title="Working hours"
+        description="Expected hours per day and week are derived from these targets."
+        actions={
+          <Button
+            variant="primary"
+            onClick={() => {
+              setError(null);
+              setEffectiveDate(todayIsoDate());
+              setPercentage("");
+              setShowAdd(true);
+            }}
+          >
+            Add
+          </Button>
+        }
+      />
+      <Card>
+        <CardHeader title="Working hours" />
+        <DataTable
+          table={table}
+          loading={loading}
+          error={loadError}
+          emptyMessage="No data found."
+        />
+      </Card>
       {pendingDelete !== null && (
         <ConfirmDialog
           title="Delete working hours"
@@ -214,29 +183,16 @@ export default function WorkingHoursPage() {
       {showAdd && (
         <Modal title="Add working hours" onClose={() => setShowAdd(false)}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="effective-date-input"
-                className="font-medium text-zinc-700"
-              >
-                Effective from:
-              </label>
-              <input
+            <Field id="effective-date-input" label="Effective from">
+              <Input
                 id="effective-date-input"
                 type="date"
                 value={effectiveDate}
                 onChange={(e) => setEffectiveDate(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
-            </div>
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="percentage-input"
-                className="font-medium text-zinc-700"
-              >
-                Percentage:
-              </label>
-              <input
+            </Field>
+            <Field id="percentage-input" label="Percentage">
+              <Input
                 id="percentage-input"
                 type="number"
                 min="0"
@@ -244,28 +200,16 @@ export default function WorkingHoursPage() {
                 placeholder="(0–100)"
                 value={percentage}
                 onChange={(e) => setPercentage(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
               />
-            </div>
-            <div className="mt-2 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowAdd(false)}
-                className="rounded border border-zinc-300 bg-white px-3 py-1 font-medium text-zinc-700 transition hover:bg-zinc-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={effectiveDate === "" || percentage === ""}
-                className="rounded bg-blue-500 px-3 py-1 font-medium text-white transition hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit
-              </button>
-            </div>
+            </Field>
+            <FormFooter
+              onCancel={() => setShowAdd(false)}
+              submitLabel="Add"
+              submitDisabled={effectiveDate === "" || percentage === ""}
+            />
           </form>
         </Modal>
       )}
-    </main>
+    </>
   );
 }

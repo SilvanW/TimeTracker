@@ -2,7 +2,6 @@
 
 import {
   createColumnHelper,
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
@@ -19,7 +18,12 @@ import {
 } from "react";
 import { apiFetch } from "./lib/api";
 import { Modal } from "./components/modal";
-import { SortableHeader } from "./components/sortable-header";
+import { Field, FormFooter } from "./components/form";
+import { Button } from "./components/ui/button";
+import { Card, CardHeader } from "./components/ui/card";
+import { DataTable } from "./components/ui/data-table";
+import { Input, Select } from "./components/ui/input";
+import { formatHours } from "./lib/format";
 import { fetchProjects, type Project } from "./lib/projects";
 
 type TimeEntry = {
@@ -154,31 +158,35 @@ export function DayDetail({
         cell: (info) => formatTime(info.getValue()),
       }),
       columnHelper.accessor("total_time", {
-        header: () => "Time Worked",
-        cell: (info) => {
-          const value = Number(info.getValue());
-          return isNaN(value) ? "" : value.toFixed(2);
-        },
+        header: () => "Time worked",
+        cell: (info) => formatHours(Number(info.getValue())),
       }),
       columnHelper.accessor("description", {
         header: () => "Description",
         cell: (info) => {
           const value = info.getValue();
-          return value === null || value === undefined ? "—" : value;
+          return value === null || value === undefined ? (
+            "—"
+          ) : (
+            <span title={value} className="block max-w-xs truncate">
+              {value}
+            </span>
+          );
         },
       }),
       columnHelper.display({
         id: "actions",
         header: () => "",
         cell: (info) => (
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             type="button"
             onClick={() => openEdit(info.row.original)}
             aria-label="Edit time entry"
-            className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
           >
             Edit
-          </button>
+          </Button>
         ),
       }),
     ],
@@ -196,69 +204,18 @@ export function DayDetail({
 
   return (
     <div className="w-full">
-      <div
-        className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
-        style={{ maxHeight: "60vh" }}
-      >
-        {error ? (
-          <div className="p-8 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
-            {error}
-          </div>
-        ) : data.length === 0 ? (
-          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-            No data found.
-          </div>
-        ) : (
-          <table className="w-full text-sm text-zinc-800">
-            <thead className="bg-zinc-100 sticky top-0 z-10">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <SortableHeader key={header.id} header={header} />
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={
-                    Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-6 py-3 border-b border-zinc-100"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <Card>
+        <CardHeader title="Day detail" />
+        <DataTable table={table} error={error} emptyMessage="No data found." />
+      </Card>
       {editing !== null && (
         <Modal title="Edit time" onClose={closeEdit}>
           <form onSubmit={handleSubmitEdit} className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="edit-project-input"
-                className="font-medium text-zinc-700"
-              >
-                Project:
-              </label>
-              <select
+            <Field id="edit-project-input" label="Project">
+              <Select
                 id="edit-project-input"
                 value={editProjectId}
                 onChange={(e) => setEditProjectId(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
@@ -268,75 +225,46 @@ export function DayDetail({
                       : ""}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="edit-start-input"
-                className="font-medium text-zinc-700"
-              >
-                Start:
-              </label>
-              <input
+              </Select>
+            </Field>
+            <Field id="edit-start-input" label="Start">
+              <Input
                 id="edit-start-input"
                 type="datetime-local"
                 value={editStart}
                 onChange={(e) => setEditStart(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
-            </div>
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="edit-end-input"
-                className="font-medium text-zinc-700"
-              >
-                End:
-              </label>
-              <input
+            </Field>
+            <Field
+              id="edit-end-input"
+              label="End"
+              hint={
+                editTimeWorked !== null
+                  ? `Time worked: ${editTimeWorked.toFixed(2)} h`
+                  : undefined
+              }
+            >
+              <Input
                 id="edit-end-input"
                 type="datetime-local"
                 value={editEnd}
                 onChange={(e) => setEditEnd(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
-            </div>
-            {editTimeWorked !== null && (
-              <p className="text-sm text-zinc-600">
-                Time worked: {editTimeWorked.toFixed(2)} h
-              </p>
-            )}
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="edit-description-input"
-                className="font-medium text-zinc-700"
-              >
-                Description:
-              </label>
-              <input
+            </Field>
+            <Field id="edit-description-input" label="Description">
+              <Input
                 id="edit-description-input"
                 type="text"
                 placeholder="(optional)"
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-48"
               />
-            </div>
-            <div className="mt-2 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={closeEdit}
-                className="rounded border border-zinc-300 bg-white px-3 py-1 font-medium text-zinc-700 transition hover:bg-zinc-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={!canSubmitEdit}
-                className="rounded bg-blue-500 px-3 py-1 font-medium text-white transition hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit
-              </button>
-            </div>
+            </Field>
+            <FormFooter
+              onCancel={closeEdit}
+              submitLabel="Save"
+              submitDisabled={!canSubmitEdit}
+            />
           </form>
         </Modal>
       )}

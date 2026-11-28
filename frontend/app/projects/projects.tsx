@@ -2,7 +2,6 @@
 
 import {
   createColumnHelper,
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
@@ -19,12 +18,21 @@ import {
   type FormEvent,
 } from "react";
 import { apiFetch } from "../lib/api";
-import { ProjectFilter, YearFilter } from "../components/input";
-import { SortableHeader } from "../components/sortable-header";
+import { YearFilter } from "../components/input";
 import { Modal } from "../components/modal";
 import { ConfirmDialog } from "../components/confirm-dialog";
+import { PageHeader } from "../components/page-header";
+import { Alert } from "../components/ui/alert";
+import { Button } from "../components/ui/button";
+import { Card, CardHeader } from "../components/ui/card";
+import { DataTable } from "../components/ui/data-table";
+import { MultiSelect } from "../components/ui/multi-select";
+import { Input, Select } from "../components/ui/input";
+import { Field, FormFooter } from "../components/form";
 import { budgetForScope, type ProjectBudget } from "../lib/budgets";
+import { cn } from "../lib/cn";
 import { fetchProjects, type Project } from "../lib/projects";
+import { formatHours, formatSigned } from "../lib/format";
 
 type ProjectTime = {
   project_id: number;
@@ -41,7 +49,7 @@ const columnHelper = createColumnHelper<ProjectTime>();
 
 const baseColumns = [
   columnHelper.accessor("project_name", {
-    header: () => "Project Name",
+    header: () => "Project",
     cell: (info) => info.getValue(),
   }),
   columnHelper.accessor("project_nr", {
@@ -52,11 +60,8 @@ const baseColumns = [
     },
   }),
   columnHelper.accessor("total_time", {
-    header: () => "Total Time",
-    cell: (info) => {
-      const value = Number(info.getValue());
-      return isNaN(value) ? "" : value.toFixed(2);
-    },
+    header: () => "Total time",
+    cell: (info) => formatHours(Number(info.getValue())),
   }),
 ];
 
@@ -64,13 +69,19 @@ const budgetColumnHelper = createColumnHelper<BudgetRow>();
 
 export function Projects() {
   const searchParams = useSearchParams();
-  const [nameFilter, setNameFilter] = useState<string>("");
-  const [budgetFilter, setBudgetFilter] = useState<string>("");
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+  const [selectedBudgetProjects, setSelectedBudgetProjects] = useState<
+    string[]
+  >([]);
+  const [pendingUrlProject, setPendingUrlProject] = useState<string | null>(
+    null,
+  );
   const [year, setYear] = useState<number>(0);
   const [debouncedYear, setDebouncedYear] = useState<number>(0);
   const [data, setData] = useState<ProjectTime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [budgetSorting, setBudgetSorting] = useState<SortingState>([]);
   const [budgets, setBudgets] = useState<ProjectBudget[]>([]);
@@ -87,11 +98,19 @@ export function Projects() {
   const [budgetYear, setBudgetYear] = useState<string>("");
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Prefill the name filter when arriving via /projects?project=...
+  // Remember the ?project=... name; it is resolved to an id below, once
+  // the project list has loaded.
   useEffect(() => {
     const project = searchParams.get("project");
-    if (project) setNameFilter(project);
+    if (project) setPendingUrlProject(project);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (pendingUrlProject === null || projects.length === 0) return;
+    const match = projects.find((p) => p.name === pendingUrlProject);
+    if (match) setSelectedProjects([String(match.id)]);
+    setPendingUrlProject(null);
+  }, [projects, pendingUrlProject]);
 
   const loadBudgets = useCallback(() => {
     setBudgetsLoading(true);
@@ -138,14 +157,26 @@ export function Projects() {
       });
   }, [debouncedYear]);
 
+  const projectOptions = useMemo(
+    () =>
+      projects.map((project) => ({
+        value: String(project.id),
+        label:
+          project.project_nr !== null
+            ? `${project.name} (${project.project_nr})`
+            : project.name,
+      })),
+    [projects],
+  );
+
   const filtered = useMemo(
     () =>
-      data.filter((project) =>
-        project.project_name
-          .toLowerCase()
-          .includes(nameFilter.trim().toLowerCase()),
-      ),
-    [data, nameFilter],
+      selectedProjects.length === 0
+        ? data
+        : data.filter((project) =>
+            selectedProjects.includes(String(project.project_id)),
+          ),
+    [data, selectedProjects],
   );
 
   const columns = useMemo<ColumnDef<ProjectTime, any>[]>(
@@ -162,13 +193,15 @@ export function Projects() {
           const budget = budgetForScope(budgets, row.project_id, year);
           if (!budget) return "—";
           return (
-            <button
-              type="button"
-              onClick={() => setBudgetFilter(row.project_name)}
-              className="rounded bg-blue-50 border border-blue-200 px-2 py-0.5 font-medium text-blue-700 transition hover:bg-blue-100"
+            <Button
+              variant="accent-soft"
+              size="sm"
+              onClick={() =>
+                setSelectedBudgetProjects([String(row.project_id)])
+              }
             >
-              {budget.time_budget_hours}
-            </button>
+              {formatHours(budget.time_budget_hours)}
+            </Button>
           );
         },
       },
@@ -186,15 +219,16 @@ export function Projects() {
           const budget = budgetForScope(budgets, row.project_id, year);
           if (!budget) return "—";
           const diff = Number(row.total_time) - budget.time_budget_hours;
-          const over = diff > 0;
           return (
             <span
-              className={`px-3 py-1 rounded font-semibold text-white ${
-                over ? "bg-red-500" : "bg-green-500"
-              }`}
+              className={cn(
+                "font-semibold",
+                diff > 0
+                  ? "text-red-700 dark:text-red-400"
+                  : "text-emerald-700 dark:text-emerald-400",
+              )}
             >
-              {over ? "+" : ""}
-              {diff.toFixed(2)}
+              {formatSigned(diff)}
             </span>
           );
         },
@@ -223,12 +257,10 @@ export function Projects() {
         }))
         .filter(
           (row) =>
-            budgetFilter.trim() === "" ||
-            row.project_name
-              .toLowerCase()
-              .includes(budgetFilter.trim().toLowerCase()),
+            selectedBudgetProjects.length === 0 ||
+            selectedBudgetProjects.includes(String(row.project_id)),
         ),
-    [budgets, projects, budgetFilter],
+    [budgets, projects, selectedBudgetProjects],
   );
 
   const budgetColumns = useMemo(
@@ -243,29 +275,29 @@ export function Projects() {
       }),
       budgetColumnHelper.accessor("time_budget_hours", {
         header: () => "Budget (h)",
-        cell: (info) => info.getValue(),
+        cell: (info) => formatHours(Number(info.getValue())),
       }),
       budgetColumnHelper.display({
         id: "actions",
         header: () => "",
         cell: (info) => (
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => openEditBudget(info.row.original)}
               aria-label="Edit budget"
-              className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
             >
               Edit
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="danger-ghost"
+              size="sm"
               onClick={() => setPendingBudgetDelete(info.row.original)}
               aria-label="Delete budget"
-              className="rounded bg-red-50 border border-red-200 px-3 py-1 font-medium text-red-700 transition hover:bg-red-100"
             >
               ×
-            </button>
+            </Button>
           </div>
         ),
       }),
@@ -291,6 +323,7 @@ export function Projects() {
   };
 
   const openEditBudget = (budget: ProjectBudget) => {
+    setActionError(null);
     setEditingBudget(budget);
     setBudgetProjectId(String(budget.project_id));
     setBudgetHours(String(budget.time_budget_hours));
@@ -301,6 +334,7 @@ export function Projects() {
   const handleSubmitBudget = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (budgetProjectId === "" || budgetHours === "") return;
+    setActionError(null);
     try {
       const url =
         editingBudget !== null
@@ -317,7 +351,7 @@ export function Projects() {
       closeBudgetModal();
       loadBudgets();
     } catch (err) {
-      setError(
+      setActionError(
         err instanceof Error
           ? err.message
           : editingBudget !== null
@@ -328,152 +362,86 @@ export function Projects() {
   };
 
   const deleteBudget = async (budget: ProjectBudget) => {
+    setActionError(null);
     try {
       await apiFetch(`/projects/${budget.project_id}/budget/${budget.id}`, {
         method: "DELETE",
       });
       loadBudgets();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete budget");
+      setActionError(
+        err instanceof Error ? err.message : "Failed to delete budget",
+      );
     }
   };
 
   return (
-    <main className="px-10 pt-3">
-      <div className="mb-3 flex items-center gap-4">
-        <ProjectFilter
-          label="Project:"
-          value={nameFilter}
-          onChange={setNameFilter}
+    <>
+      {actionError !== null && <Alert className="mb-6">{actionError}</Alert>}
+      <PageHeader
+        title="Projects"
+        description={`${projects.length} ${
+          projects.length === 1 ? "project" : "projects"
+        }`}
+      />
+      <Card>
+        <CardHeader
+          title="Project time"
+          actions={
+            <>
+              <MultiSelect
+                label="Project"
+                options={projectOptions}
+                selected={selectedProjects}
+                onChange={setSelectedProjects}
+              />
+              <YearFilter value={year} onChange={setYear} />
+            </>
+          }
         />
-        <YearFilter value={year} onChange={setYear} />
-      </div>
-      <div
-        className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
-        style={{ maxHeight: "60vh" }}
-      >
-        {loading ? (
-          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-            Loading...
-          </div>
-        ) : error ? (
-          <div className="p-8 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
-            {error}
-          </div>
-        ) : data.length === 0 ? (
-          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-            No data found.
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-            No projects match.
-          </div>
-        ) : (
-          <table className="w-full text-sm text-zinc-800">
-            <thead className="bg-zinc-100 sticky top-0 z-10">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <SortableHeader key={header.id} header={header} />
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={`transition ${
-                    Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
-                  } hover:bg-blue-100/40`}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-6 py-3 border-b border-zinc-100"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-      <div className="mt-8 mb-3 flex items-center gap-4">
-        <h2 className="text-lg font-medium text-zinc-700">Budgets</h2>
-        <ProjectFilter
-          value={budgetFilter}
-          onChange={setBudgetFilter}
-          placeholder="(all projects)"
+        <DataTable
+          table={table}
+          loading={loading}
+          error={error}
+          emptyMessage={
+            data.length === 0 ? "No data found." : "No projects match."
+          }
         />
-        <div className="flex-1" />
-        <button
-          type="button"
-          onClick={() => {
-            setEditingBudget(null);
-            setBudgetProjectId("");
-            setBudgetHours("");
-            setBudgetYear("");
-            setShowAddBudget(true);
-          }}
-          className="rounded bg-blue-50 border border-blue-200 px-3 py-1 font-medium text-blue-700 transition hover:bg-blue-100"
-        >
-          Add budget
-        </button>
-      </div>
-      <div
-        className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
-        style={{ maxHeight: "60vh" }}
-      >
-        {budgetsLoading ? (
-          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-            Loading...
-          </div>
-        ) : budgetRows.length === 0 ? (
-          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-            No data found.
-          </div>
-        ) : (
-          <table className="w-full text-sm text-zinc-800">
-            <thead className="bg-zinc-100 sticky top-0 z-10">
-              {budgetTable.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <SortableHeader key={header.id} header={header} />
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {budgetTable.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={
-                    Number(row.id) % 2 === 0 ? "bg-white" : "bg-zinc-50"
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-6 py-3 border-b border-zinc-100"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      </Card>
+      <Card className="mt-6">
+        <CardHeader
+          title="Budgets"
+          actions={
+            <>
+              <MultiSelect
+                options={projectOptions}
+                selected={selectedBudgetProjects}
+                onChange={setSelectedBudgetProjects}
+                placeholder="(all projects)"
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  setActionError(null);
+                  setEditingBudget(null);
+                  setBudgetProjectId("");
+                  setBudgetHours("");
+                  setBudgetYear("");
+                  setShowAddBudget(true);
+                }}
+              >
+                Add budget
+              </Button>
+            </>
+          }
+        />
+        <DataTable
+          table={budgetTable}
+          loading={budgetsLoading}
+          emptyMessage="No data found."
+        />
+      </Card>
       {pendingBudgetDelete !== null && (
         <ConfirmDialog
           title="Delete budget"
@@ -499,19 +467,12 @@ export function Projects() {
           onClose={closeBudgetModal}
         >
           <form onSubmit={handleSubmitBudget} className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="budget-project-input"
-                className="font-medium text-zinc-700"
-              >
-                Project:
-              </label>
-              <select
+            <Field id="budget-project-input" label="Project">
+              <Select
                 id="budget-project-input"
                 value={budgetProjectId}
                 onChange={(e) => setBudgetProjectId(e.target.value)}
                 disabled={editingBudget !== null}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:opacity-60"
               >
                 <option value="">(select)</option>
                 {projects.map((project) => (
@@ -522,61 +483,36 @@ export function Projects() {
                       : ""}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="budget-hours-input"
-                className="font-medium text-zinc-700"
-              >
-                Hours:
-              </label>
-              <input
+              </Select>
+            </Field>
+            <Field id="budget-hours-input" label="Hours">
+              <Input
                 id="budget-hours-input"
                 type="number"
                 min="1"
                 placeholder="(hours)"
                 value={budgetHours}
                 onChange={(e) => setBudgetHours(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
               />
-            </div>
-            <div className="flex items-center gap-4">
-              <label
-                htmlFor="budget-year-input"
-                className="font-medium text-zinc-700"
-              >
-                Year:
-              </label>
-              <input
+            </Field>
+            <Field id="budget-year-input" label="Year">
+              <Input
                 id="budget-year-input"
                 type="number"
                 min="1"
                 placeholder="(total)"
                 value={budgetYear}
                 onChange={(e) => setBudgetYear(e.target.value)}
-                className="border border-zinc-300 rounded px-3 py-1 bg-white text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-200 w-28"
               />
-            </div>
-            <div className="mt-2 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={closeBudgetModal}
-                className="rounded border border-zinc-300 bg-white px-3 py-1 font-medium text-zinc-700 transition hover:bg-zinc-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={budgetProjectId === "" || budgetHours === ""}
-                className="rounded bg-blue-500 px-3 py-1 font-medium text-white transition hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit
-              </button>
-            </div>
+            </Field>
+            <FormFooter
+              onCancel={closeBudgetModal}
+              submitLabel={editingBudget !== null ? "Save" : "Add budget"}
+              submitDisabled={budgetProjectId === "" || budgetHours === ""}
+            />
           </form>
         </Modal>
       )}
-    </main>
+    </>
   );
 }

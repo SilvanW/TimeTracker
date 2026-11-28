@@ -2,7 +2,6 @@
 
 import {
   createColumnHelper,
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
@@ -11,7 +10,10 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "./lib/api";
-import { SortableHeader } from "./components/sortable-header";
+import { cn } from "./lib/cn";
+import { Card, CardHeader } from "./components/ui/card";
+import { DataTable } from "./components/ui/data-table";
+import { formatHours, formatSigned } from "./lib/format";
 import {
   dayTargetHours,
   fetchWorkingHoursTargets,
@@ -131,11 +133,8 @@ export function WeekDays({
         },
       }),
       columnHelper.accessor("total_time", {
-        header: () => "Total Time",
-        cell: (info) => {
-          const value = Number(info.getValue());
-          return isNaN(value) ? "" : value.toFixed(2);
-        },
+        header: () => "Total time",
+        cell: (info) => formatHours(Number(info.getValue())),
       }),
       {
         id: "time_diff",
@@ -149,15 +148,16 @@ export function WeekDays({
           const target = dayTargetHours(targets, row.year, row.day_of_year);
           if (target === null) return "—";
           const diff = Number(row.total_time) - target;
-          const positive = diff >= 0;
           return (
             <span
-              className={`px-3 py-1 rounded font-semibold text-white ${
-                positive ? "bg-green-500" : "bg-red-500"
-              }`}
+              className={cn(
+                "font-semibold",
+                diff >= 0
+                  ? "text-emerald-700 dark:text-emerald-400"
+                  : "text-red-700 dark:text-red-400",
+              )}
             >
-              {positive ? "+" : ""}
-              {diff.toFixed(2)}
+              {formatSigned(diff)}
             </span>
           );
         },
@@ -177,60 +177,16 @@ export function WeekDays({
 
   return (
     <div className="w-full">
-      <div
-        className="overflow-x-auto overflow-y-auto rounded-lg shadow border border-zinc-200 bg-white"
-        style={{ maxHeight: "60vh" }}
-      >
-        {error ? (
-          <div className="p-8 text-center rounded-lg border border-red-200 bg-red-50 text-red-700 text-lg font-medium">
-            {error}
-          </div>
-        ) : rows.length === 0 ? (
-          <div className="p-8 text-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-700 text-lg font-medium shadow">
-            No data found.
-          </div>
-        ) : (
-          <table className="w-full text-sm text-zinc-800">
-            <thead className="bg-zinc-100 sticky top-0 z-10">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <SortableHeader key={header.id} header={header} />
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={`transition ${
-                    row.original.day_of_year === selectedDay
-                      ? "bg-blue-100"
-                      : Number(row.id) % 2 === 0
-                        ? "bg-white"
-                        : "bg-zinc-50"
-                  } hover:bg-blue-100/40`}
-                  onClick={() => onDaySelect(row.original.day_of_year)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-6 py-3 border-b border-zinc-100"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <Card>
+        <CardHeader title="Days of the week" />
+        <DataTable
+          table={table}
+          error={error}
+          isRowSelected={(row) => row.original.day_of_year === selectedDay}
+          onRowClick={(row) => onDaySelect(row.original.day_of_year)}
+          emptyMessage="No data found."
+        />
+      </Card>
     </div>
   );
 }
